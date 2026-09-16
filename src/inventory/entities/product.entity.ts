@@ -4,6 +4,8 @@ import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { CreateProductDto } from '../dto/createProduct.dto.js';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ProductEventEntity, ProductEventNameEnum } from './productEvent.entity.js';
+import { ReDescribeProductDto } from '../dto/reDescribeProduct.dto.js';
+import { ChangeQuantityDto } from '../dto/changeQuantity.dto.js';
 
 @Entity({ name: 'products' })
 export class ProductEntity {
@@ -40,6 +42,10 @@ export class ProductEntity {
     this.removedAt = raw.removedAt
   }
 
+  exportEvents(): ProductEventEntity[] {
+    return this.#uncommittedEvents
+  }
+
   static createByDto(dto: CreateProductDto): ProductEntity {
     const now = new Date()
     const product = new ProductEntity({
@@ -59,7 +65,36 @@ export class ProductEntity {
     return product
   }
 
-  exportEvents(): ProductEventEntity[] {
-    return this.#uncommittedEvents
+  reDescribe(dto: ReDescribeProductDto): void {
+    this.name = dto.name
+    this.description = dto.description
+    this.#uncommittedEvents.push(
+      ProductEventEntity.create({
+        eventName: ProductEventNameEnum.ProductWasReDescribed,
+        value: this,
+      })
+    )
+  }
+
+
+  changeQuantity(dto: ChangeQuantityDto): void {
+    if (dto.quantity === this.quantity) return;
+    const eventName = dto.quantity > this.quantity
+      ? ProductEventNameEnum.ProductQuantityWasIncreased
+      : ProductEventNameEnum.ProductQuantityWasReduced
+    this.quantity = dto.quantity
+    this.#uncommittedEvents.push(
+      ProductEventEntity.create({ eventName, value: this })
+    )
+  }
+
+  markAsDeleted() {
+    this.removedAt = new Date()
+    this.#uncommittedEvents.push(
+      ProductEventEntity.create({
+        eventName: ProductEventNameEnum.ProductWasDeleted,
+        value: this,
+      })
+    )
   }
 }

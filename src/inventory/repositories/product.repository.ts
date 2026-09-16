@@ -9,6 +9,10 @@ export class ProductRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
+  findById(productId: number): Promise<ProductEntity | null> {
+    return this.txHost.tx.getRepository(ProductEntity).findOne({ where: { id: productId }})
+  }
+
   save(product: ProductEntity): Promise<ProductEntity> {
     return this.txHost.tx.getRepository(ProductEntity).save(product)
   }
