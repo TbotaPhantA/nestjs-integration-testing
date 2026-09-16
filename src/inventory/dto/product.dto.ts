@@ -1,4 +1,4 @@
-import type { ProductEntity } from '../db/product.entity.js';
+import type { ProductEntity } from '../domain/product.entity.js';
 
 export class ProductDto {
   id: number

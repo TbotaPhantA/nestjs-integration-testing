@@ -3,6 +3,7 @@ import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
 import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { CreateProductDto } from '../dto/createProduct.dto.js';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ProductEventEntity, ProductEventNameEnum } from './productEvent.entity.js';
 
 @Entity({ name: 'products' })
 export class ProductEntity {
@@ -27,6 +28,8 @@ export class ProductEntity {
   @Column({ name: 'removed_at', nullable: true })
   removedAt: Date | null
 
+  #uncommittedEvents = new Array<ProductEventEntity>()
+
   constructor(raw: PickOptional<NoMethods<ProductEntity>, 'id'>) {
     this.id = raw.id ?? PLACEHOLDER_ID
     this.name = raw.name
@@ -39,7 +42,7 @@ export class ProductEntity {
 
   static createByDto(dto: CreateProductDto): ProductEntity {
     const now = new Date()
-    return new ProductEntity({
+    const product = new ProductEntity({
       name: dto.name,
       description: dto.description,
       quantity: dto.quantity,
@@ -47,5 +50,16 @@ export class ProductEntity {
       updatedAt: now,
       removedAt: null,
     })
+    product.#uncommittedEvents.push(
+      ProductEventEntity.create({
+        eventName: ProductEventNameEnum.ProductWasCreated,
+        value: product,
+      })
+    )
+    return product
+  }
+
+  exportEvents(): ProductEventEntity[] {
+    return this.#uncommittedEvents
   }
 }

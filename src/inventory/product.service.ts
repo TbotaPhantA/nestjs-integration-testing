@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/createProduct.dto.js';
-import { ProductRepository } from './product.repository.js';
+import { ProductRepository } from './repositories/product.repository.js';
 import { ProductDto } from './dto/product.dto.js';
-import { ProductEntity } from './db/product.entity.js';
+import { ProductEntity } from './domain/product.entity.js';
+import { ProductEventRepository } from './repositories/productEvent.repository.js';
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly repo: ProductRepository,
+    private readonly eventsRepo: ProductEventRepository,
   ) {}
 
   async create(dto: CreateProductDto): Promise<ProductDto> {
-    const savedProduct = await this.repo.save(ProductEntity.createByDto(dto))
+    const product = ProductEntity.createByDto(dto)
+    const savedProduct = await this.repo.save(product)
+    await this.eventsRepo.save(savedProduct.exportEvents())
     return ProductDto.from(savedProduct)
   }
 }

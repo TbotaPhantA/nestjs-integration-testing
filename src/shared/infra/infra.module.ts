@@ -5,7 +5,7 @@ import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 
 import { config } from './config/config.js';
-import { ProductEntity } from '../../inventory/db/product.entity.js';
+import { ProductEntity } from '../../inventory/domain/product.entity.js';
 
 const typeOrmModule = TypeOrmModule.forRoot({
   type: 'postgres',
