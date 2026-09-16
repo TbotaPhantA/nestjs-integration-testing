@@ -6,6 +6,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ProductEventEntity, ProductEventNameEnum } from './productEvent.entity.js';
 import { ReDescribeProductDto } from '../dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from '../dto/changeQuantity.dto.js';
+import { assert } from '../../shared/utils/asrts/assert.js';
 
 @Entity({ name: 'products' })
 export class ProductEntity {
@@ -43,6 +44,12 @@ export class ProductEntity {
   }
 
   exportEvents(): ProductEventEntity[] {
+    assert(this.id !== PLACEHOLDER_ID, "Events can't be exported before insertion")
+    this.#uncommittedEvents.forEach(event => {
+      if (event.aggregateId === PLACEHOLDER_ID.toString()) {
+        event.aggregateId = this.id.toString()
+      }
+    })
     return this.#uncommittedEvents
   }
 
