@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/createProduct.dto.js';
 import { ProductRepository } from './repositories/product.repository.js';
 import { ProductDto } from './dto/product.dto.js';
-import { ProductEntity } from './domain/product.entity.js';
+import { ProductEntity } from './entities/product.entity.js';
 import { ProductEventRepository } from './repositories/productEvent.repository.js';
 
 @Injectable()
