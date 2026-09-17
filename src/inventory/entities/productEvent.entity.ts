@@ -6,8 +6,11 @@ import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
 
 @Entity({ name: 'product_events' })
 export class ProductEventEntity {
-  @PrimaryGeneratedColumn({ name: 'message_id' })
+  @PrimaryGeneratedColumn({ name: 'message_id', type: 'int8' })
   messageId: number
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date
 
   @Column({ name: 'event_name', type: 'enum' })
   eventName: ProductEventNameEnum
@@ -17,9 +20,6 @@ export class ProductEventEntity {
 
   @Column({ type: 'jsonb' })
   value: ProductEntity
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
 
   constructor(raw: PickOptional<NoMethods<ProductEventEntity>, 'messageId'>) {
     this.messageId = raw.messageId ?? PLACEHOLDER_ID

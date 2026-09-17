@@ -20,15 +20,6 @@ export class ProductEntity {
   @PrimaryGeneratedColumn({ type: 'int8' })
   id: number
 
-  @Column({ type: 'varchar', length: 100 })
-  name: string
-
-  @Column({ type: 'varchar', length: 10_000 })
-  description: string
-
-  @Column({ type: 'int2' })
-  quantity: number
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
@@ -37,6 +28,15 @@ export class ProductEntity {
 
   @DeleteDateColumn({ name: 'removed_at', nullable: true })
   removedAt: Date | null
+
+  @Column({ type: 'int2' })
+  quantity: number
+
+  @Column({ type: 'varchar', length: 100 })
+  name: string
+
+  @Column({ type: 'varchar', length: 10_000 })
+  description: string
 
   #uncommittedEvents = new Array<ProductEventEntity>()
 
