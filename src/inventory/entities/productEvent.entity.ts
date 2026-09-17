@@ -15,8 +15,8 @@ export class ProductEventEntity {
   @Column({ name: 'event_name', type: 'enum' })
   eventName: ProductEventNameEnum
 
-  @Column({ name: 'aggregate_id', type: 'varchar', length: 100 })
-  aggregateId: string
+  @Column({ name: 'aggregate_id', type: 'int8' })
+  aggregateId: number
 
   @Column({ type: 'jsonb' })
   value: ProductEntity
@@ -31,7 +31,7 @@ export class ProductEventEntity {
   static create(params: Pick<ProductEventEntity, 'eventName' | 'value'>) {
     return new ProductEventEntity({
       eventName: params.eventName,
-      aggregateId: params.value.id.toString(),
+      aggregateId: params.value.id,
       value: params.value,
       createdAt: params.value.createdAt,
     })

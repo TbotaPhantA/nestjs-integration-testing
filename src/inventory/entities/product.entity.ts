@@ -53,8 +53,8 @@ export class ProductEntity {
   exportEvents(): ProductEventEntity[] {
     assert(this.id !== PLACEHOLDER_ID, "Events can't be exported before insertion")
     this.#uncommittedEvents.forEach(event => {
-      if (event.aggregateId === PLACEHOLDER_ID.toString()) {
-        event.aggregateId = this.id.toString()
+      if (event.aggregateId === PLACEHOLDER_ID) {
+        event.aggregateId = this.id
       }
     })
     return this.#uncommittedEvents
