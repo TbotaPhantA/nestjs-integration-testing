@@ -2,7 +2,14 @@ import { NoMethods } from '../../shared/types/noMethods.js';
 import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
 import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { CreateProductDto } from '../dto/createProduct.dto.js';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
+} from 'typeorm';
 import { ProductEventEntity, ProductEventNameEnum } from './productEvent.entity.js';
 import { ReDescribeProductDto } from '../dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from '../dto/changeQuantity.dto.js';
@@ -10,25 +17,25 @@ import { assert } from '../../shared/utils/asrts/assert.js';
 
 @Entity({ name: 'products' })
 export class ProductEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int8' })
   id: number
 
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   name: string
 
-  @Column()
+  @Column({ type: 'varchar', length: 10_000 })
   description: string
 
-  @Column()
+  @Column({ type: 'int2' })
   quantity: number
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
-  @Column({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date
 
-  @Column({ name: 'removed_at', nullable: true })
+  @DeleteDateColumn({ name: 'removed_at', nullable: true })
   removedAt: Date | null
 
   #uncommittedEvents = new Array<ProductEventEntity>()

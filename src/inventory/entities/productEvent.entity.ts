@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import type { ProductEntity } from './product.entity.js';
 import type { NoMethods } from '../../shared/types/noMethods.js';
 import type { PickOptional } from '../../shared/types/pickOptional.js';
@@ -9,16 +9,16 @@ export class ProductEventEntity {
   @PrimaryGeneratedColumn({ name: 'message_id' })
   messageId: number
 
-  @Column({ type: 'jsonb' })
+  @Column({ name: 'event_name', type: 'enum' })
   eventName: ProductEventNameEnum
 
-  @Column()
+  @Column({ name: 'aggregate_id', type: 'varchar', length: 100 })
   aggregateId: string
 
   @Column({ type: 'jsonb' })
   value: ProductEntity
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
   constructor(raw: PickOptional<NoMethods<ProductEventEntity>, 'messageId'>) {
