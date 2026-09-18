@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CreateProductDto } from './createProduct.dto.js';
 import { IsInt, IsNotEmpty, Min } from 'class-validator';
 
@@ -6,5 +6,6 @@ export class ReDescribeProductDto extends PickType(CreateProductDto, ['name', 'd
   @IsNotEmpty()
   @IsInt()
   @Min(1)
+  @ApiProperty()
   productId: number
 }
