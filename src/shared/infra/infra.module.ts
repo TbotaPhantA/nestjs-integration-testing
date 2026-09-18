@@ -6,6 +6,7 @@ import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-t
 
 import { config } from './config/config.js';
 import { ProductEntity } from '../../inventory/entities/product.entity.js';
+import { ProductEventEntity } from '../../inventory/entities/productEvent.entity.js';
 
 const typeOrmModule = TypeOrmModule.forRoot({
   type: 'postgres',
@@ -14,7 +15,7 @@ const typeOrmModule = TypeOrmModule.forRoot({
   username: config.db.username,
   password: config.db.password,
   database: config.db.name,
-  entities: [ProductEntity],
+  entities: [ProductEntity, ProductEventEntity],
   synchronize: config.db.synchronize,
 });
 
