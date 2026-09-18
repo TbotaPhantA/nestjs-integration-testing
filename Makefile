@@ -1,5 +1,5 @@
 ENV_FILE ?= .env
-COMPOSE_FILE ?= compose-local.yml
+COMPOSE_FILE ?= docker-compose/compose-local.yml
 
 .PHONY: start-dev start-prod local-infra-up local-infra-down
 
