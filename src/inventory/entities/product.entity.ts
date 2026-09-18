@@ -40,14 +40,16 @@ export class ProductEntity {
 
   #uncommittedEvents = new Array<ProductEventEntity>()
 
-  constructor(raw: PickOptional<NoMethods<ProductEntity>, 'id'>) {
-    this.id = raw.id ?? PLACEHOLDER_ID
-    this.name = raw.name
-    this.description = raw.description
-    this.quantity = raw.quantity
-    this.createdAt = raw.createdAt
-    this.updatedAt = raw.updatedAt
-    this.removedAt = raw.removedAt
+  static createFromRaw(raw: PickOptional<NoMethods<ProductEntity>, 'id'>) {
+    const entity = new ProductEntity()
+    entity.id = raw.id ?? PLACEHOLDER_ID
+    entity.name = raw.name
+    entity.description = raw.description
+    entity.quantity = raw.quantity
+    entity.createdAt = raw.createdAt
+    entity.updatedAt = raw.updatedAt
+    entity.removedAt = raw.removedAt
+    return entity
   }
 
   exportEvents(): ProductEventEntity[] {
@@ -62,7 +64,7 @@ export class ProductEntity {
 
   static createByDto(dto: CreateProductDto): ProductEntity {
     const now = new Date()
-    const product = new ProductEntity({
+    const product = ProductEntity.createFromRaw({
       name: dto.name,
       description: dto.description,
       quantity: dto.quantity,

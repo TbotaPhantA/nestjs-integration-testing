@@ -30,15 +30,17 @@ export class ProductEventEntity {
   @Column({ type: 'jsonb' })
   value: ProductEntity
 
-  constructor(raw: PickOptional<NoMethods<ProductEventEntity>, 'messageId'>) {
-    this.messageId = raw.messageId ?? PLACEHOLDER_ID
-    this.eventName = raw.eventName
-    this.aggregateId = raw.aggregateId
-    this.value = raw.value
+  static createFromRaw(raw: PickOptional<NoMethods<ProductEventEntity>, 'messageId'>) {
+    const entity = new ProductEventEntity()
+    entity.messageId = raw.messageId ?? PLACEHOLDER_ID
+    entity.eventName = raw.eventName
+    entity.aggregateId = raw.aggregateId
+    entity.value = raw.value
+    return entity
   }
 
   static create(params: Pick<ProductEventEntity, 'eventName' | 'value'>) {
-    return new ProductEventEntity({
+    return ProductEventEntity.createFromRaw({
       eventName: params.eventName,
       aggregateId: params.value.id,
       value: params.value,
