@@ -1,8 +1,17 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
 import type { ProductEntity } from './product.entity.js';
 import type { NoMethods } from '../../shared/types/noMethods.js';
 import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
+
+export enum ProductEventNameEnum {
+  ProductWasCreated="ProductWasCreated",
+  ProductWasReDescribed="ProductWasReDescribed",
+  ProductQuantityWasReduced="ProductQuantityWasReduced",
+  ProductQuantityWasIncreased="ProductQuantityWasIncreased",
+  ProductWasDeleted="ProductWasDeleted",
+}
 
 @Entity({ name: 'product_events' })
 export class ProductEventEntity {
@@ -12,7 +21,7 @@ export class ProductEventEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
-  @Column({ name: 'event_name', type: 'enum' })
+  @Column({ name: 'event_name', type: 'enum', enum: ProductEventNameEnum })
   eventName: ProductEventNameEnum
 
   @Column({ name: 'aggregate_id', type: 'int8' })
@@ -36,12 +45,4 @@ export class ProductEventEntity {
       createdAt: params.value.createdAt,
     })
   }
-}
-
-export enum ProductEventNameEnum {
-  ProductWasCreated="ProductWasCreated",
-  ProductWasReDescribed="ProductWasReDescribed",
-  ProductQuantityWasReduced="ProductQuantityWasReduced",
-  ProductQuantityWasIncreased="ProductQuantityWasIncreased",
-  ProductWasDeleted="ProductWasDeleted",
 }
