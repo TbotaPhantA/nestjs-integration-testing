@@ -6,11 +6,11 @@ import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
 
 export enum ProductEventNameEnum {
-  ProductWasCreated="ProductWasCreated",
-  ProductWasReDescribed="ProductWasReDescribed",
-  ProductQuantityWasReduced="ProductQuantityWasReduced",
-  ProductQuantityWasIncreased="ProductQuantityWasIncreased",
-  ProductWasDeleted="ProductWasDeleted",
+  PRODUCT_WAS_CREATED="PRODUCT_WAS_CREATED",
+  PRODUCT_WAS_RE_DESCRIBED="PRODUCT_WAS_RE_DESCRIBED",
+  PRODUCT_QUANTITY_WAS_REDUCED="PRODUCT_QUANTITY_WAS_REDUCED",
+  PRODUCT_QUANTITY_WAS_INCREASED="PRODUCT_QUANTITY_WAS_INCREASED",
+  PRODUCT_WAS_DELETED="PRODUCT_WAS_DELETED",
 }
 
 @Entity({ name: 'product_events' })

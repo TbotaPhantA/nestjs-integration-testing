@@ -74,7 +74,7 @@ export class ProductEntity {
     })
     product.#uncommittedEvents.push(
       ProductEventEntity.create({
-        eventName: ProductEventNameEnum.ProductWasCreated,
+        eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
         value: product,
       })
     )
@@ -86,7 +86,7 @@ export class ProductEntity {
     this.description = dto.description
     this.#uncommittedEvents.push(
       ProductEventEntity.create({
-        eventName: ProductEventNameEnum.ProductWasReDescribed,
+        eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
         value: this,
       })
     )
@@ -96,8 +96,8 @@ export class ProductEntity {
   changeQuantity(dto: ChangeQuantityDto): void {
     if (dto.quantity === this.quantity) return;
     const eventName = dto.quantity > this.quantity
-      ? ProductEventNameEnum.ProductQuantityWasIncreased
-      : ProductEventNameEnum.ProductQuantityWasReduced
+      ? ProductEventNameEnum.PRODUCT_QUANTITY_WAS_INCREASED
+      : ProductEventNameEnum.PRODUCT_QUANTITY_WAS_REDUCED
     this.quantity = dto.quantity
     this.#uncommittedEvents.push(
       ProductEventEntity.create({ eventName, value: this })
@@ -108,7 +108,7 @@ export class ProductEntity {
     this.removedAt = new Date()
     this.#uncommittedEvents.push(
       ProductEventEntity.create({
-        eventName: ProductEventNameEnum.ProductWasDeleted,
+        eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
         value: this,
       })
     )
