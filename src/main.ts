@@ -14,7 +14,7 @@ async function bootstrap() {
     whitelist: true
   }));
   setupSwagger();
-  await app.listen(config.port);
+  await app.listen(config.port, () => console.log(`Swagger - http://127.0.0.1:${config.port}/api`));
 
   // -----------------sub functions------------------------
   function setupSwagger() {
