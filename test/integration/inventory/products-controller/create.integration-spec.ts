@@ -33,9 +33,9 @@ describe(`${ProductController.name}`, () => {
         body: dto,
       })
 
-      expect(response.statusCode).toStrictEqual(HttpStatus.OK)
+      expect(response.statusCode).toStrictEqual(HttpStatus.CREATED)
       expect(JSON.parse(response.body)).toStrictEqual(toResponse(ProductDtoBuilder['CREATED_PRODUCT']))
-      
+
       // TODO: check record and event in db
     })
   });
