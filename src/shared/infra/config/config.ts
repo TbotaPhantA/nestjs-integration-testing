@@ -9,7 +9,10 @@ class Config {
     name: ensureTruthy(process.env.DB_NAME),
     username: ensureTruthy(process.env.DB_USERNAME),
     password: ensureTruthy(process.env.DB_PASSWORD),
-    synchronize: process.env.DB_SYNCHRONIZE === 'true'
+    synchronize: process.env.DB_SYNCHRONIZE === 'true',
+    poolSize: process.env.DB_POOL_SIZE
+      ? ensureNumber(Number(process.env.DB_POOL_SIZE))
+      : 10
   }
 }
 

@@ -17,6 +17,7 @@ const typeOrmModule = TypeOrmModule.forRoot({
   database: config.db.name,
   entities: [ProductEntity, ProductEventEntity],
   synchronize: config.db.synchronize,
+  poolSize: config.db.poolSize,
 });
 
 const clsModule = ClsModule.forRoot({
