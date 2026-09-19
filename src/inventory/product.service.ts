@@ -7,6 +7,7 @@ import { ProductEventRepository } from './repositories/productEvent.repository.j
 import { ReDescribeProductDto } from './dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from './dto/changeQuantity.dto.js';
 import { assertTruthy } from '../shared/utils/asrts/assertTruthy.js';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class ProductService {
@@ -53,6 +54,7 @@ export class ProductService {
     return product
   }
 
+  @Transactional()
   private async saveWithEvents(product: ProductEntity) {
     const savedProduct = await this.repo.save(product)
     await this.eventsRepo.save(savedProduct.exportEvents())
