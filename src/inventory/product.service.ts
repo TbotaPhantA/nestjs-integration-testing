@@ -17,20 +17,17 @@ export class ProductService {
     private readonly eventsRepo: ProductEventRepository,
   ) {}
 
-  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   async findById(productId: number): Promise<ProductDto> {
     const product = await this.getById(productId)
     return ProductDto.from(product)
   }
 
-  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   async create(dto: CreateProductDto): Promise<ProductDto> {
     const product = ProductEntity.createByDto(dto)
     const savedProduct = await this.saveWithEvents(product)
     return ProductDto.from(savedProduct)
   }
 
-  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   async reDescribe(dto: ReDescribeProductDto): Promise<ProductDto> {
     const product = await this.getById(dto.productId)
     product.reDescribe(dto)
@@ -38,7 +35,6 @@ export class ProductService {
     return ProductDto.from(savedProduct)
   }
 
-  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   async changeQuantity(dto: ChangeQuantityDto): Promise<ProductDto> {
     const product = await this.getById(dto.productId)
     product.changeQuantity(dto)
@@ -46,7 +42,6 @@ export class ProductService {
     return ProductDto.from(savedProduct)
   }
 
-  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   async delete(productId: number): Promise<ProductDto> {
     const product = await this.getById(productId)
     product.markAsDeleted()
@@ -60,6 +55,7 @@ export class ProductService {
     return product
   }
 
+  @Transactional<TransactionalAdapterTypeOrm>(Propagation.Nested)
   private async saveWithEvents(product: ProductEntity) {
     const savedProduct = await this.repo.save(product)
     await this.eventsRepo.save(savedProduct.exportEvents())
