@@ -6,7 +6,7 @@ import { ReDescribeProductDto } from './dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from './dto/changeQuantity.dto.js';
 import { ProductIdParamDto } from './dto/productIdParamDto.js';
 
-@Controller('inventory')
+@Controller('products')
 export class ProductController {
   constructor(
     private readonly service: ProductService,
