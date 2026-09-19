@@ -13,7 +13,7 @@ import {
 import { ProductEventEntity, ProductEventNameEnum } from './productEvent.entity.js';
 import { ReDescribeProductDto } from '../dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from '../dto/changeQuantity.dto.js';
-import { assert } from '../../shared/utils/asrts/assert.js';
+import { assert } from '../../shared/utils/assert/assert.js';
 
 @Entity({ name: 'products' })
 export class ProductEntity {
