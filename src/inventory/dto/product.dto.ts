@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ProductDto {
   @ApiProperty()
-  id: number
+  id: string
 
   @ApiProperty()
   name: string
@@ -25,7 +25,7 @@ export class ProductDto {
 
   static from(product: ProductEntity): ProductDto {
     const dto = new ProductDto()
-    dto.id = product.id
+    dto.id = product.id.toString()
     dto.name = product.name
     dto.description = product.description
     dto.quantity = product.quantity

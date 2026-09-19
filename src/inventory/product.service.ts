@@ -6,9 +6,9 @@ import { ProductEntity } from './entities/product.entity.js';
 import { ProductEventRepository } from './repositories/productEvent.repository.js';
 import { ReDescribeProductDto } from './dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from './dto/changeQuantity.dto.js';
-import { assertTruthy } from '../shared/utils/asrts/assertTruthy.js';
 import { Propagation, Transactional } from '@nestjs-cls/transactional';
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
+import { assertTruthy } from '../shared/utils/assert/assertTruthy.js';
 
 @Injectable()
 export class ProductService {

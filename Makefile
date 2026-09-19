@@ -3,7 +3,7 @@ COMPOSE_FILE ?= docker-compose/compose-local.yml
 
 .PHONY: start-dev start-prod local-infra-up local-infra-down \
         local-infra-full-restart autogenerate-migrations migrations-up \
-        migrations-down seeds-up
+        migrations-down seeds-up integration-test
 
 start-dev:
 	node --env-file=$(ENV_FILE) ./node_modules/@nestjs/cli/bin/nest.js start --watch
@@ -32,3 +32,6 @@ migrations-down:
 
 seeds-up:
 	node --env-file=$(ENV_FILE) --no-warnings --loader ts-node/esm seeds/seed-runner.ts
+
+integration-test:
+	node --env-file=$(ENV_FILE) ./node_modules/vitest/vitest.mjs run --config vitest.config.integration.ts $(FILES)
