@@ -1,12 +1,9 @@
-import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumberString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class ProductIdParamDto {
   @IsNotEmpty()
-  @IsInt()
-  @Min(1)
+  @IsNumberString()
   @ApiProperty()
-  @Type(() => Number)
-  productId: number
+  productId: string
 }

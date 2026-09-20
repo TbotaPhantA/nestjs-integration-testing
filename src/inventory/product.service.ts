@@ -17,7 +17,7 @@ export class ProductService {
     private readonly eventsRepo: ProductEventRepository,
   ) {}
 
-  async findById(productId: number): Promise<ProductDto> {
+  async findById(productId: string): Promise<ProductDto> {
     const product = await this.getById(productId)
     return ProductDto.from(product)
   }
@@ -42,14 +42,14 @@ export class ProductService {
     return ProductDto.from(savedProduct)
   }
 
-  async delete(productId: number): Promise<ProductDto> {
+  async delete(productId: string): Promise<ProductDto> {
     const product = await this.getById(productId)
     product.markAsDeleted()
     const savedProduct = await this.saveWithEvents(product)
     return ProductDto.from(savedProduct)
   }
 
-  private async getById(productId: number): Promise<ProductEntity> {
+  private async getById(productId: string): Promise<ProductEntity> {
     const product = await this.repo.findById(productId)
     assertTruthy(product, new BadRequestException(`Product ${productId} not found!`))
     return product

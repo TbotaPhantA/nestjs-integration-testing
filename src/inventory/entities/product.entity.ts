@@ -18,7 +18,7 @@ import { assert } from '../../shared/utils/assert/assert.js';
 @Entity({ name: 'products' })
 export class ProductEntity {
   @PrimaryGeneratedColumn({ type: 'int8' })
-  id: number
+  id: string
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
@@ -55,9 +55,8 @@ export class ProductEntity {
   exportEvents(): ProductEventEntity[] {
     assert(this.id !== PLACEHOLDER_ID, "Events can't be exported before insertion")
     this.#uncommittedEvents.forEach(event => {
-      if (event.aggregateId === PLACEHOLDER_ID) {
-        event.aggregateId = this.id
-      }
+      event.aggregateId = this.id
+      event.value.id = this.id;
     })
     return this.#uncommittedEvents
   }

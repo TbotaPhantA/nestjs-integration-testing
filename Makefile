@@ -22,16 +22,16 @@ local-infra-down:
 local-infra-restart: local-infra-down local-infra-up
 
 autogenerate-migrations:
-	node --env-file=$(ENV_FILE) ./node_modules/typeorm/cli-ts-node-esm.js migration:generate migrations/$(name) -d migrations/config/data-source.ts
+	node --env-file=$(ENV_FILE) --import tsx ./node_modules/typeorm/cli.js migration:generate migrations/$(name) -d migrations/config/data-source.ts
 
 migrations-up:
-	node --env-file=$(ENV_FILE) ./node_modules/typeorm/cli-ts-node-esm.js migration:run -d migrations/config/data-source.ts
+	node --env-file=$(ENV_FILE) --import tsx ./node_modules/typeorm/cli.js migration:run -d migrations/config/data-source.ts
 
 migrations-down:
-	node --env-file=$(ENV_FILE) ./node_modules/typeorm/cli-ts-node-esm.js migration:revert -d migrations/config/data-source.ts
+	node --env-file=$(ENV_FILE) --import tsx ./node_modules/typeorm/cli.js migration:revert -d migrations/config/data-source.ts
 
 seeds-up:
-	node --env-file=$(ENV_FILE) --no-warnings --loader ts-node/esm seeds/seed-runner.ts
+	node --env-file=$(ENV_FILE) --no-warnings --import tsx seeds/seed-runner.ts
 
 integration-test:
 	node --env-file=$(ENV_FILE) ./node_modules/vitest/vitest.mjs run --config vitest.config.integration.ts $(FILES)

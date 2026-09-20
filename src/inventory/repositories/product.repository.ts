@@ -9,7 +9,7 @@ export class ProductRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {}
 
-  findById(productId: number): Promise<ProductEntity | null> {
+  findById(productId: string): Promise<ProductEntity | null> {
     return this.txHost.tx.getRepository(ProductEntity).findOne({ where: { id: productId }})
   }
 

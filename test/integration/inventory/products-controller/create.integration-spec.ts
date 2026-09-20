@@ -1,19 +1,39 @@
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from '../../../../src/app.module.js';
 import { Test } from '@nestjs/testing';
+import { AppModule } from '../../../../src/app.module.js';
 import { CreateProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/createProductDto.builder.js';
+import { plainToInstance } from 'class-transformer';
+import { ProductDto } from '../../../../src/inventory/dto/product.dto.js';
 import { HttpStatus } from '@nestjs/common';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
-import { toResponse } from '../../../shared/utils/toResponse.js';
+import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import { Repository } from 'typeorm';
+import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
+import { ProductEventEntity, ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import {
+  ProductEventEntityBuilder
+} from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 
 describe(`${ProductController.name}`, () => {
   let app: NestFastifyApplication;
+  let productsRepo: Repository<ProductEntity>;
+  let productEventsRepo: Repository<ProductEventEntity>;
+  let now: Date;
 
   beforeAll(async () => {
+    now = new Date('2000-01-01T00:00:00.000Z')
+    vi.useFakeTimers({
+      toFake: ['Date']
+    });
+    vi.setSystemTime(now);
+
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile()
+    }).compile();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
@@ -21,22 +41,46 @@ describe(`${ProductController.name}`, () => {
 
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
-  })
+
+    const { tx } = app.get(TransactionHost<TransactionalAdapterTypeOrm>)
+    productsRepo = tx.getRepository(ProductEntity)
+    productEventsRepo = tx.getRepository(ProductEventEntity)
+  });
+
+  afterAll(async () => {
+    await app.close();
+    vi.useRealTimers();
+  });
 
   describe(`${ProductController.prototype.findById.name}`, () => {
     test('should successfully create new product and insert event', async () => {
-      const dto = CreateProductDtoBuilder.defaultAll().result
+      const dto = CreateProductDtoBuilder.defaultAll().result;
 
-      const response = await app.inject({
+      const { statusCode, body } = await app.inject({
         method: 'POST',
         url: 'products/create',
         body: dto,
-      })
+      });
 
-      expect(response.statusCode).toStrictEqual(HttpStatus.CREATED)
-      expect(JSON.parse(response.body)).toStrictEqual(toResponse(ProductDtoBuilder['CREATED_PRODUCT']))
+      const response = plainToInstance(ProductDto, JSON.parse(body));
+      const { id } = response
+      const expectedResponse = ProductDtoBuilder['DEFAULT_PRODUCT'].with({ id }).result
+      expect(statusCode).toStrictEqual(HttpStatus.CREATED);
+      expect(response).toStrictEqual(expectedResponse);
 
-      // TODO: check record and event in db
-    })
+
+      const product = await productsRepo.findOne({ where: { id } })
+      const expectedProduct = ProductEntityBuilder['DEFAULT_PRODUCT'].with({ id }).result
+      expect(product).toStrictEqual(expectedProduct)
+
+      const productWasCreatedEvent = await productEventsRepo.findOne({ where: { aggregateId: id }})
+      const expectedEvent = ProductEventEntityBuilder.defaultAll.with({
+        aggregateId: id,
+        createdAt: now,
+        eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+        value: expectedResponse,
+      }).omit('messageId').result
+      expect(productWasCreatedEvent).toMatchObject(expectedEvent)
+    });
   });
 });

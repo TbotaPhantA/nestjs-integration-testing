@@ -15,13 +15,13 @@ export class ProductDto {
   quantity: number
 
   @ApiProperty()
-  createdAt: Date
+  createdAt: string
 
   @ApiProperty()
-  updatedAt: Date
+  updatedAt: string
 
   @ApiProperty()
-  removedAt: Date | null
+  removedAt: string | null
 
   static from(product: ProductEntity): ProductDto {
     const dto = new ProductDto()
@@ -29,9 +29,9 @@ export class ProductDto {
     dto.name = product.name
     dto.description = product.description
     dto.quantity = product.quantity
-    dto.createdAt = product.createdAt
-    dto.updatedAt = product.updatedAt
-    dto.removedAt = product.removedAt
+    dto.createdAt = product.createdAt.toISOString()
+    dto.updatedAt = product.updatedAt.toISOString()
+    dto.removedAt = product.removedAt?.toISOString() ?? null
     return dto
   }
 }
