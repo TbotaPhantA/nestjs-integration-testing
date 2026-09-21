@@ -1,4 +1,6 @@
 import { hashInt8 } from '../../utils/hashes/hashInt8.js';
+import { ProductEntityBuilder } from '../builders/inventory/entities/productEntity.builder.js';
+import { InjectionBuilder } from '../../utils/injectionBuilder.js';
 
 export enum ProductFixtureNamesEnum {
   DEFAULT_PRODUCT = 'DEFAULT_PRODUCT',
@@ -7,6 +9,7 @@ export enum ProductFixtureNamesEnum {
 export interface ProductFixture {
   name: ProductFixtureNamesEnum;
   id: string;
+  value: () => InjectionBuilder<ProductEntityBuilder>
 }
 
 export const ProductFixtures = {
@@ -21,5 +24,6 @@ function productFixture(name: ProductFixtureNamesEnum): ProductFixture {
   return {
     name,
     id,
+    value: () => ProductEntityBuilder.defaultAll().with({ id })
   };
 }
