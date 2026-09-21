@@ -51,11 +51,12 @@ describe(ProductController.name, () => {
             id,
             updatedAt: now.toISOString(),
           }).result;
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({
-          ...changes,
-          id,
-          updatedAt: now
-        }).result;
+        const expectedEntity = ProductEntityBuilder.defaultAll()
+          .with({
+            ...changes,
+            id,
+            updatedAt: now
+          }).result;
         const expectedEvent = ProductEventEntityBuilder.defaultAll()
           .with({
             aggregateId: id,
