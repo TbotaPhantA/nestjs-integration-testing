@@ -33,5 +33,5 @@ migrations-down:
 seeds-up:
 	node --env-file=$(ENV_FILE) --no-warnings --import tsx seeds/seed-runner.ts
 
-integration-test:
+test-int:
 	node --env-file=$(ENV_FILE) ./node_modules/vitest/vitest.mjs run --config vitest.config.integration.ts $(FILES)
