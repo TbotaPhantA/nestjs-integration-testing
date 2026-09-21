@@ -6,7 +6,6 @@ import {
 import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { test as vitestTest, vi } from 'vitest';
-import { AppModule } from '../../../src/app.module.js';
 import { isolateInTransaction } from '../utils/isolateInTransaction.js';
 
 export interface TestAppContext {
@@ -17,6 +16,7 @@ export interface TestAppContext {
 
 export interface TestAppOptions {
   freezeDate?: string;
+  poolSize?: number;
 }
 
 type ItTxEach = {
@@ -87,6 +87,12 @@ async function bootTestApp(options: TestAppOptions): Promise<TestAppContext> {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(now);
   }
+
+  if (options.poolSize != null) {
+    process.env.DB_POOL_SIZE = String(options.poolSize);
+  }
+
+  const { AppModule } = await import('../../../src/app.module.js');
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
