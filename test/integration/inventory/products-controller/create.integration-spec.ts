@@ -4,7 +4,10 @@ import { ProductController } from '../../../../src/inventory/product.controller.
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
-import { expectInDB } from '../../../shared/testing/matchers.js';
+import {
+  expectProductEventInDB,
+  expectProductInDB,
+} from '../../../shared/testing/expectations.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
@@ -20,22 +23,22 @@ describe(ProductController.name, () => {
     testApp.itTx(
       'creates a product and records a PRODUCT_WAS_CREATED event',
       async ({ app, txHost, now }) => {
-        const requestBody = ProductDtoBuilder.defaultAll().result
+        const requestBody = ProductDtoBuilder.defaultAll().result;
         const response = await productsClient(app).create(requestBody);
         const id = response.body.id;
 
         expect(response.statusCode).toStrictEqual(HttpStatus.CREATED);
-        expect(response.body).toMatchDto(
+        expect(response.body).toEqual(
           ProductDtoBuilder.defaultAll().with({
             id,
-          }).result
+          }).result,
         );
-        await expectInDB({ txHost, id }).toMatchEntity(
+        await expectProductInDB({ txHost, id }).toStrictEqual(
           ProductEntityBuilder.defaultAll().with({
             id,
           }).result,
         );
-        await expectInDB({ txHost, aggregateId: id }).toMatchEvent(
+        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
           ProductEventEntityBuilder.defaultAll().with({
             eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
             aggregateId: id,
