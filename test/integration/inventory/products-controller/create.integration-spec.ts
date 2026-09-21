@@ -7,11 +7,13 @@ import {
   ProductEventNameEnum,
 } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
-import {
-  ProductFixtureNamesEnum,
-  ProductFixtures,
-} from '../../../shared/fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
+import { CreateProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/createProductDto.builder.js';
+import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
+import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import {
+  ProductEventEntityBuilder
+} from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-01T00:00:00.000Z' });
 
@@ -24,36 +26,30 @@ describe(ProductController.name, () => {
     testApp.itTx(
       'creates a product and records a PRODUCT_WAS_CREATED event',
       async ({ app, txHost, now }) => {
-        const fixture =
-          ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const requestBody = CreateProductDtoBuilder.defaultAll().result
+        const response = await productsClient(app).create(requestBody);
 
-        const response = await productsClient(app).create(
-          fixture.createDto().result,
-        );
-
-        expect(response).toRespondWith(HttpStatus.CREATED);
-        expect(response.body).toMatchDto(
-          fixture.dto().with({ id: response.body.id }).result,
-        );
+        expect(response).toMatchStatus(HttpStatus.CREATED);
+        const { id } = response.body;
+        const expectedResponse = ProductDtoBuilder.defaultAll().with({ id }).result
+        expect(response.body).toMatchDto(expectedResponse);
 
         const product = await txHost.tx
           .getRepository(ProductEntity)
-          .findOneOrFail({ where: { id: response.body.id } });
-        expect(product).toMatchEntity(
-          fixture.entity().with({ id: response.body.id }).result,
-        );
+          .findOneOrFail({ where: { id } });
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({ id }).result;
+        expect(product).toMatchEntity(expectedEntity);
 
         const event = await txHost.tx
           .getRepository(ProductEventEntity)
-          .findOneOrFail({ where: { aggregateId: response.body.id } });
-        expect(event).toMatchEvent(
-          fixture.event().with({
-            aggregateId: response.body.id,
-            eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
-            createdAt: now,
-            value: response.body,
-          }).result,
-        );
+          .findOneOrFail({ where: { aggregateId: id } });
+        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+          eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+          aggregateId: id,
+          createdAt: now,
+          value: response.body,
+        }).result
+        expect(event).toMatchEvent(expectedEvent);
       },
     );
   });

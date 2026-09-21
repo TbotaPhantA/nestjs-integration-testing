@@ -28,33 +28,31 @@ describe(ProductController.name, () => {
           ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
         const changes = { name: 'name2', description: 'description2' };
 
-        const response = await productsClient(app).reDescribe(
-          fixture.reDescribeDto().with(changes).result,
-        );
+        const requestBody = fixture.makeReDescribeDto().with(changes).result;
+        const response = await productsClient(app).reDescribe(requestBody);
 
-        expect(response).toRespondWith(HttpStatus.OK);
-        expect(response.body).toMatchDto(
-          fixture.dto().with({ ...changes, updatedAt: now.toISOString() })
-            .result,
-        );
+        expect(response).toMatchStatus(HttpStatus.OK);
+        const expectedResponse = fixture.makeResponseDto()
+          .with({ ...changes, updatedAt: now.toISOString() })
+          .result
+        expect(response.body).toMatchDto(expectedResponse);
 
         const product = await txHost.tx
           .getRepository(ProductEntity)
           .findOneOrFail({ where: { id: fixture.id } });
-        expect(product).toMatchEntity(
-          fixture.entity().with({ ...changes, updatedAt: now }).result,
-        );
+        const expectedEntity = fixture.makeEntity().with({ ...changes, updatedAt: now }).result
+        expect(product).toMatchEntity(expectedEntity);
 
         const event = await txHost.tx
           .getRepository(ProductEventEntity)
           .findOneOrFail({ where: { aggregateId: fixture.id } });
-        expect(event).toMatchEvent(
-          fixture.event().with({
-            eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
+        const expectedEvent = fixture
+          .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
+          .with({
             createdAt: now,
             value: response.body,
-          }).result,
-        );
+          }).result
+        expect(event).toMatchEvent(expectedEvent);
       },
     );
   });

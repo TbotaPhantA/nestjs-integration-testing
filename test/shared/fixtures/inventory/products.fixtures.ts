@@ -1,10 +1,10 @@
 import { hashInt8 } from '../../utils/hashes/hashInt8.js';
 import { InjectionBuilder } from '../../utils/injectionBuilder.js';
 import { CreateProductDto } from '../../../../src/inventory/dto/createProduct.dto.js';
-import { ProductDto } from '../../../../src/inventory/dto/product.dto.js';
+import { ProductResponseDto } from '../../../../src/inventory/dto/productResponseDto.js';
 import { ReDescribeProductDto } from '../../../../src/inventory/dto/reDescribeProduct.dto.js';
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
-import { ProductEventEntity } from '../../../../src/inventory/entities/productEvent.entity.js';
+import { ProductEventEntity, ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { CreateProductDtoBuilder } from '../builders/inventory/dto/createProductDto.builder.js';
 import { ProductDtoBuilder } from '../builders/inventory/dto/productDto.builder.js';
 import { ReDescribeProductDtoBuilder } from '../builders/inventory/dto/reDescribeProductDto.builder.js';
@@ -18,11 +18,11 @@ export enum ProductFixtureNamesEnum {
 export interface ProductFixture {
   name: ProductFixtureNamesEnum;
   id: string;
-  entity: () => InjectionBuilder<ProductEntity>;
-  dto: () => InjectionBuilder<ProductDto>;
-  event: () => InjectionBuilder<ProductEventEntity>;
-  createDto: () => InjectionBuilder<CreateProductDto>;
-  reDescribeDto: () => InjectionBuilder<ReDescribeProductDto>;
+  makeEntity: () => InjectionBuilder<ProductEntity>;
+  makeResponseDto: () => InjectionBuilder<ProductResponseDto>;
+  makeEvent: (eventName: ProductEventNameEnum) => InjectionBuilder<ProductEventEntity>;
+  makeCreateDto: () => InjectionBuilder<CreateProductDto>;
+  makeReDescribeDto: () => InjectionBuilder<ReDescribeProductDto>;
 }
 
 export const ProductFixtures = {
@@ -37,12 +37,12 @@ function productFixture(name: ProductFixtureNamesEnum): ProductFixture {
   return {
     name,
     id,
-    entity: () => ProductEntityBuilder.defaultAll().with({ id }),
-    dto: () => ProductDtoBuilder.defaultAll().with({ id }),
-    event: () =>
-      ProductEventEntityBuilder.defaultAll().with({ aggregateId: id }),
-    createDto: () => CreateProductDtoBuilder.defaultAll(),
-    reDescribeDto: () =>
+    makeEntity: () => ProductEntityBuilder.defaultAll().with({ id }),
+    makeResponseDto: () => ProductDtoBuilder.defaultAll().with({ id }),
+    makeEvent: (eventName: ProductEventNameEnum) =>
+      ProductEventEntityBuilder.defaultAll().with({ aggregateId: id, eventName }),
+    makeCreateDto: () => CreateProductDtoBuilder.defaultAll(),
+    makeReDescribeDto: () =>
       ReDescribeProductDtoBuilder.defaultAll().with({ productId: id }),
   };
 }

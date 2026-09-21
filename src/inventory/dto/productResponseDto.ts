@@ -1,7 +1,7 @@
 import type { ProductEntity } from '../entities/product.entity.js';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ProductDto {
+export class ProductResponseDto {
   @ApiProperty()
   id: string
 
@@ -23,8 +23,8 @@ export class ProductDto {
   @ApiProperty()
   removedAt: string | null
 
-  static from(product: ProductEntity): ProductDto {
-    const dto = new ProductDto()
+  static from(product: ProductEntity): ProductResponseDto {
+    const dto = new ProductResponseDto()
     dto.id = product.id.toString()
     dto.name = product.name
     dto.description = product.description

@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import type { HttpStatus } from '@nestjs/common';
-import type { ProductDto } from '../../../src/inventory/dto/product.dto.js';
+import type { ProductResponseDto } from '../../../src/inventory/dto/productResponseDto.js';
 import type { ProductEntity } from '../../../src/inventory/entities/product.entity.js';
 import type { ProductEventEntity } from '../../../src/inventory/entities/productEvent.entity.js';
 
@@ -9,7 +9,7 @@ interface HttpResponseLike {
 }
 
 expect.extend({
-  toRespondWith(received: HttpResponseLike, expected: HttpStatus) {
+  toMatchStatus(received: HttpResponseLike, expected: HttpStatus) {
     const pass = received.statusCode === expected;
 
     return {
@@ -21,7 +21,7 @@ expect.extend({
     };
   },
 
-  toMatchDto(received: ProductDto, expected: ProductDto) {
+  toMatchDto(received: ProductResponseDto, expected: ProductResponseDto) {
     const pass = this.equals(received, expected);
 
     return {

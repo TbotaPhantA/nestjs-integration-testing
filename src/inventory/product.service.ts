@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/createProduct.dto.js';
 import { ProductRepository } from './repositories/product.repository.js';
-import { ProductDto } from './dto/product.dto.js';
+import { ProductResponseDto } from './dto/productResponseDto.js';
 import { ProductEntity } from './entities/product.entity.js';
 import { ProductEventRepository } from './repositories/productEvent.repository.js';
 import { ReDescribeProductDto } from './dto/reDescribeProduct.dto.js';
@@ -17,36 +17,36 @@ export class ProductService {
     private readonly eventsRepo: ProductEventRepository,
   ) {}
 
-  async findById(productId: string): Promise<ProductDto> {
+  async findById(productId: string): Promise<ProductResponseDto> {
     const product = await this.getById(productId)
-    return ProductDto.from(product)
+    return ProductResponseDto.from(product)
   }
 
-  async create(dto: CreateProductDto): Promise<ProductDto> {
+  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
     const product = ProductEntity.createByDto(dto)
     const savedProduct = await this.saveWithEvents(product)
-    return ProductDto.from(savedProduct)
+    return ProductResponseDto.from(savedProduct)
   }
 
-  async reDescribe(dto: ReDescribeProductDto): Promise<ProductDto> {
+  async reDescribe(dto: ReDescribeProductDto): Promise<ProductResponseDto> {
     const product = await this.getById(dto.productId)
     product.reDescribe(dto)
     const savedProduct = await this.saveWithEvents(product)
-    return ProductDto.from(savedProduct)
+    return ProductResponseDto.from(savedProduct)
   }
 
-  async changeQuantity(dto: ChangeQuantityDto): Promise<ProductDto> {
+  async changeQuantity(dto: ChangeQuantityDto): Promise<ProductResponseDto> {
     const product = await this.getById(dto.productId)
     product.changeQuantity(dto)
     const savedProduct = await this.saveWithEvents(product)
-    return ProductDto.from(savedProduct)
+    return ProductResponseDto.from(savedProduct)
   }
 
-  async delete(productId: string): Promise<ProductDto> {
+  async delete(productId: string): Promise<ProductResponseDto> {
     const product = await this.getById(productId)
     product.markAsDeleted()
     const savedProduct = await this.saveWithEvents(product)
-    return ProductDto.from(savedProduct)
+    return ProductResponseDto.from(savedProduct)
   }
 
   private async getById(productId: string): Promise<ProductEntity> {

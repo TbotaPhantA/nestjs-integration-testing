@@ -4,7 +4,7 @@ import type { ProductEntity } from './product.entity.js';
 import type { NoMethods } from '../../shared/types/noMethods.js';
 import type { PickOptional } from '../../shared/types/pickOptional.js';
 import { PLACEHOLDER_ID } from '../../shared/constants/placeholderId.js';
-import { ProductDto } from '../dto/product.dto.js';
+import { ProductResponseDto } from '../dto/productResponseDto.js';
 import { jsonbToInstance } from '../../shared/transformers/jsonToInstance.js';
 
 export enum ProductEventNameEnum {
@@ -34,8 +34,8 @@ export class ProductEventEntity {
   @Column({ name: 'aggregate_id', type: 'int8' })
   aggregateId: string
 
-  @Column({ type: 'jsonb', transformer: jsonbToInstance(ProductDto) })
-  value: ProductDto
+  @Column({ type: 'jsonb', transformer: jsonbToInstance(ProductResponseDto) })
+  value: ProductResponseDto
 
   static createFromRaw(raw: PickOptional<NoMethods<ProductEventEntity>, 'messageId'>) {
     const entity = new ProductEventEntity()
@@ -54,7 +54,7 @@ export class ProductEventEntity {
     return ProductEventEntity.createFromRaw({
       eventName,
       aggregateId: value.id,
-      value: ProductDto.from(value),
+      value: ProductResponseDto.from(value),
       createdAt: value.updatedAt,
     })
   }

@@ -2,7 +2,7 @@ import type { HttpStatus } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { plainToInstance } from 'class-transformer';
 import { CreateProductDto } from '../../../src/inventory/dto/createProduct.dto.js';
-import { ProductDto } from '../../../src/inventory/dto/product.dto.js';
+import { ProductResponseDto } from '../../../src/inventory/dto/productResponseDto.js';
 import { ReDescribeProductDto } from '../../../src/inventory/dto/reDescribeProduct.dto.js';
 
 export interface TestResponse<T> {
@@ -13,17 +13,17 @@ export interface TestResponse<T> {
 export class ProductsClient {
   constructor(private readonly app: NestFastifyApplication) {}
 
-  async create(dto: CreateProductDto): Promise<TestResponse<ProductDto>> {
+  async create(dto: CreateProductDto): Promise<TestResponse<ProductResponseDto>> {
     return this.request('POST', 'products/create', dto);
   }
 
-  async findById(id: string): Promise<TestResponse<ProductDto>> {
+  async findById(id: string): Promise<TestResponse<ProductResponseDto>> {
     return this.request('GET', `products/find-by-id/${id}`);
   }
 
   async reDescribe(
     dto: ReDescribeProductDto,
-  ): Promise<TestResponse<ProductDto>> {
+  ): Promise<TestResponse<ProductResponseDto>> {
     return this.request('PATCH', 'products/re-describe', dto);
   }
 
@@ -31,7 +31,7 @@ export class ProductsClient {
     method: 'GET' | 'POST' | 'PATCH',
     url: string,
     body?: object,
-  ): Promise<TestResponse<ProductDto>> {
+  ): Promise<TestResponse<ProductResponseDto>> {
     const { statusCode, body: rawBody } = await this.app.inject({
       method,
       url,
@@ -40,7 +40,7 @@ export class ProductsClient {
 
     return {
       statusCode,
-      body: plainToInstance(ProductDto, JSON.parse(rawBody)),
+      body: plainToInstance(ProductResponseDto, JSON.parse(rawBody)),
     };
   }
 }

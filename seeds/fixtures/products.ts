@@ -6,5 +6,5 @@ import {
 
 export const CreatedProductSeed = {
   entity: ProductEntity,
-  data: ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT].entity().result,
+  data: ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT].makeEntity().result,
 } as const;
