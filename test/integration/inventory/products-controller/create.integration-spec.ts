@@ -18,10 +18,9 @@ describe(ProductController.name, () => {
   });
 
   describe(ProductController.prototype.create.name, () => {
-    testApp.itTx(
+    testApp.itTx.each([[CreateProductDtoBuilder.defaultAll().result]])(
       'creates a product and records a PRODUCT_WAS_CREATED event',
-      async ({ app, txHost, now }) => {
-        const requestBody = CreateProductDtoBuilder.defaultAll().result;
+      async ({ app, txHost, now }, requestBody) => {
         const response = await productsClient(app).create(requestBody);
 
         expect(response).toMatchStatus(HttpStatus.CREATED);
@@ -31,7 +30,9 @@ describe(ProductController.name, () => {
         }).result;
         expect(response.body).toMatchDto(expectedResponse);
 
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({ id }).result
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          id,
+        }).result;
         await expectInDB({ txHost, id }).toMatchEntity(expectedEntity);
 
         const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
@@ -39,8 +40,10 @@ describe(ProductController.name, () => {
           aggregateId: id,
           createdAt: now,
           value: response.body,
-        }).result
-        await expectInDB({ txHost, aggregateId: id }).toMatchEvent(expectedEvent);
+        }).result;
+        await expectInDB({ txHost, aggregateId: id }).toMatchEvent(
+          expectedEvent,
+        );
       },
     );
   });

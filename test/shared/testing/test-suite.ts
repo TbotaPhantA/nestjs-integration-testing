@@ -19,9 +19,27 @@ export interface TestAppOptions {
   freezeDate?: string;
 }
 
+type ItTxEach = {
+  <T extends readonly any[] | readonly [any]>(
+    cases: readonly T[],
+  ): (
+    title: string,
+    fn: (ctx: TestAppContext, ...args: T) => Promise<void>,
+  ) => void;
+  <T>(
+    cases: readonly T[],
+  ): (
+    title: string,
+    fn: (ctx: TestAppContext, args: T) => Promise<void>,
+  ) => void;
+};
+
 export interface TestSuite {
   context: () => Promise<TestAppContext>;
-  itTx: (title: string, fn: (ctx: TestAppContext) => Promise<void>) => void;
+  itTx: {
+    (title: string, fn: (ctx: TestAppContext) => Promise<void>): void;
+    each: ItTxEach;
+  };
   teardown: () => Promise<void>;
 }
 
@@ -30,15 +48,27 @@ export function createTestSuite(options: TestAppOptions = {}): TestSuite {
 
   const boot = () => (bootPromise ??= bootTestApp(options));
 
-  return {
-    context: boot,
-
-    itTx(title, fn) {
+  const itTx = Object.assign(
+    (title: string, fn: (ctx: TestAppContext) => Promise<void>) => {
       vitestTest(title, async () => {
         const ctx = await boot();
         await isolateInTransaction(() => fn(ctx), ctx.txHost);
       });
     },
+    {
+      each: ((cases: unknown) =>
+        (title: string, fn: (...args: unknown[]) => Promise<void>) => {
+          (vitestTest.each as any)(cases)(title, async (...args: unknown[]) => {
+            const ctx = await boot();
+            await isolateInTransaction(() => fn(ctx, ...args), ctx.txHost);
+          });
+        }) as ItTxEach,
+    },
+  );
+
+  return {
+    context: boot,
+    itTx,
 
     async teardown() {
       if (!bootPromise) return;
