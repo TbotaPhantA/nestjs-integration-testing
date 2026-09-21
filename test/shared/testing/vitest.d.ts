@@ -8,9 +8,7 @@ declare module 'vitest' {
   interface Assertion<T = any> {
     toMatchStatus(status: HttpStatus): void;
     toMatchDto(dto: ProductResponseDto): void;
-    toMatchEntity(entity: ProductEntity): void;
-    toMatchEvent(event: ProductEventEntity): void;
+    toMatchEntity(entity: ProductEntity): Promise<void>;
+    toMatchEvent(event: ProductEventEntity): Promise<void>;
   }
-
-  interface AsymmetricMatchersContaining {}
 }

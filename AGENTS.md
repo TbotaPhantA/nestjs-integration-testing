@@ -37,7 +37,7 @@ All `.ts` files import with `.js` extensions — required by `moduleResolution: 
 - `freezeDate` fakes `Date` for the whole file (one frozen clock). Tests derive expected timestamps from the `now` in the itTx context; fixtures carry UTC instants
 - Write flows that **modify a seeded row** must freeze at an instant *distinct* from the fixture's — meeting the seed's timestamp makes TypeORM regenerate the update-date as real time. `re-describe` therefore freezes at `2000-01-02` while the seed carries `2000-01-01`
 - HTTP calls go through per-controller clients (e.g. `productsClient(app)` from `test/shared/clients/products.client.ts`), which encapsulate method, path, and DTO parsing
-- Assertions use custom matchers: `toRespondWith(status)`, `toMatchDto(...)`, `toMatchEntity(...)`, `toMatchEvent(...)` (`toMatchEvent` ignores `messageId`)
+- Assertions use custom matchers: `toMatchStatus(status)`, `toMatchDto(...)` for HTTP responses (e.g. `expect(response).toMatchStatus(HttpStatus.OK)`); `toMatchEntity(...)`, `toMatchEvent(...)` (`toMatchEvent` ignores `messageId`) for DB state. Entity/event assertions go through `expectInDB({ txHost, id })` / `expectInDB({ txHost, aggregateId })` (from `test/shared/testing/matchers.ts`) — the matcher loads the row from the transaction itself (`await expectInDB(ctx).toMatchEntity(expected)`) and is overload-narrowed so each context exposes only its matching matcher
 - Committed seed rows are a deliberate, Rails-fixtures-style pattern: `findById`-style reads reference `ProductFixtures[Enum]` whose deterministic `id` is `hashInt8(name)`. Seeding stays a dev-ops prerequisite (`make local-infra-up` / `make seeds-up`)
 
 ## Test fixtures
