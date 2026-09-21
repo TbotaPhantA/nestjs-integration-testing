@@ -18,40 +18,33 @@ describe(ProductController.name, () => {
   });
 
   describe(ProductController.prototype.reDescribe.name, () => {
-    testApp.itTx.each([
-      [
-        ProductFixtureNamesEnum.DEFAULT_PRODUCT,
-        { name: 'name2', description: 'description2' },
-      ],
-    ])(
+    testApp.itTx(
       're-describes %s and records a PRODUCT_WAS_RE_DESCRIBED event',
-      async ({ app, txHost, now }, fixtureName, changes) => {
-        const fixture = ProductFixtures[fixtureName];
+      async ({ app, txHost, now }) => {
+        const fixture = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const changes = { name: 'name2', description: 'description2' };
 
         const requestBody = fixture.makeReDescribeDto().with(changes).result;
         const response = await productsClient(app).reDescribe(requestBody);
 
-        expect(response).toMatchStatus(HttpStatus.OK);
-        const expectedResponse = fixture
-          .makeResponseDto()
-          .with({ ...changes, updatedAt: now.toISOString() }).result;
-        expect(response.body).toMatchDto(expectedResponse);
-
-        const expectedEntity = fixture
-          .makeEntity()
-          .with({ ...changes, updatedAt: now }).result;
-        await expectInDB({ txHost, id: fixture.id }).toMatchEntity(
-          expectedEntity,
+        expect(response.statusCode).toStrictEqual(HttpStatus.OK);
+        expect(response.body).toMatchDto(
+          fixture
+            .makeResponseDto()
+            .with({ ...changes, updatedAt: now.toISOString() }).result
         );
-
-        const expectedEvent = fixture
-          .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
-          .with({
-            createdAt: now,
-            value: response.body,
-          }).result;
+        await expectInDB({ txHost, id: fixture.id }).toMatchEntity(
+          fixture
+            .makeEntity()
+            .with({ ...changes, updatedAt: now }).result,
+        );
         await expectInDB({ txHost, aggregateId: fixture.id }).toMatchEvent(
-          expectedEvent,
+          fixture
+            .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
+            .with({
+              createdAt: now,
+              value: response.body,
+            }).result,
         );
       },
     );

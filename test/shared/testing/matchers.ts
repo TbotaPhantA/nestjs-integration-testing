@@ -1,14 +1,9 @@
 import { expect } from 'vitest';
-import type { HttpStatus } from '@nestjs/common';
 import type { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import type { ProductResponseDto } from '../../../src/inventory/dto/productResponseDto.js';
 import { ProductEntity } from '../../../src/inventory/entities/product.entity.js';
 import { ProductEventEntity } from '../../../src/inventory/entities/productEvent.entity.js';
-
-interface HttpResponseLike {
-  statusCode: HttpStatus;
-}
 
 export interface EntityMatchContext {
   txHost: TransactionHost<TransactionalAdapterTypeOrm>;
@@ -37,18 +32,6 @@ export function expectInDB(
 }
 
 expect.extend({
-  toMatchStatus(received: HttpResponseLike, expected: HttpStatus) {
-    const pass = received.statusCode === expected;
-
-    return {
-      pass,
-      message: () =>
-        pass
-          ? `expected response status not to be ${expected}`
-          : `expected response status to be ${expected}, but got ${received.statusCode}`,
-    };
-  },
-
   toMatchDto(received: ProductResponseDto, expected: ProductResponseDto) {
     const pass = this.equals(received, expected);
 

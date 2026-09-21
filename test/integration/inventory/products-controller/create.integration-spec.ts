@@ -5,7 +5,6 @@ import { ProductEventNameEnum } from '../../../../src/inventory/entities/product
 import { productsClient } from '../../../shared/clients/products.client.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
 import { expectInDB } from '../../../shared/testing/matchers.js';
-import { CreateProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/createProductDto.builder.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
@@ -18,31 +17,31 @@ describe(ProductController.name, () => {
   });
 
   describe(ProductController.prototype.create.name, () => {
-    testApp.itTx.each([[CreateProductDtoBuilder.defaultAll().result]])(
+    testApp.itTx(
       'creates a product and records a PRODUCT_WAS_CREATED event',
-      async ({ app, txHost, now }, requestBody) => {
+      async ({ app, txHost, now }) => {
+        const requestBody = ProductDtoBuilder.defaultAll().result
         const response = await productsClient(app).create(requestBody);
+        const id = response.body.id;
 
-        expect(response).toMatchStatus(HttpStatus.CREATED);
-        const { id } = response.body;
-        const expectedResponse = ProductDtoBuilder.defaultAll().with({
-          id,
-        }).result;
-        expect(response.body).toMatchDto(expectedResponse);
-
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({
-          id,
-        }).result;
-        await expectInDB({ txHost, id }).toMatchEntity(expectedEntity);
-
-        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
-          eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
-          aggregateId: id,
-          createdAt: now,
-          value: response.body,
-        }).result;
+        expect(response.statusCode).toStrictEqual(HttpStatus.CREATED);
+        expect(response.body).toMatchDto(
+          ProductDtoBuilder.defaultAll().with({
+            id,
+          }).result
+        );
+        await expectInDB({ txHost, id }).toMatchEntity(
+          ProductEntityBuilder.defaultAll().with({
+            id,
+          }).result,
+        );
         await expectInDB({ txHost, aggregateId: id }).toMatchEvent(
-          expectedEvent,
+          ProductEventEntityBuilder.defaultAll().with({
+            eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+            aggregateId: id,
+            createdAt: now,
+            value: response.body,
+          }).result,
         );
       },
     );
