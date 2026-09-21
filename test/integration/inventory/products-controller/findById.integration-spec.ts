@@ -20,11 +20,12 @@ describe(ProductController.name, () => {
     it('returns the seeded product by id', async () => {
       const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
       const { app } = await testApp.context();
+      const expectedResponse = ProductDtoBuilder.defaultAll().with({ id }).result
 
       const response = await productsClient(app).findById(id);
 
       expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-      expect(response.body).toEqual(ProductDtoBuilder.defaultAll().with({ id }).result);
+      expect(response.body).toEqual(expectedResponse);
     });
   });
 });
