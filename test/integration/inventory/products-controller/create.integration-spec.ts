@@ -31,18 +31,16 @@ describe(ProductController.name, () => {
         }).result;
         expect(response.body).toMatchDto(expectedResponse);
 
-        await expectInDB({ txHost, id }).toMatchEntity(
-          ProductEntityBuilder.defaultAll().with({ id }).result,
-        );
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({ id }).result
+        await expectInDB({ txHost, id }).toMatchEntity(expectedEntity);
 
-        await expectInDB({ txHost, aggregateId: id }).toMatchEvent(
-          ProductEventEntityBuilder.defaultAll().with({
-            eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
-            aggregateId: id,
-            createdAt: now,
-            value: response.body,
-          }).result,
-        );
+        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+          eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+          aggregateId: id,
+          createdAt: now,
+          value: response.body,
+        }).result
+        await expectInDB({ txHost, aggregateId: id }).toMatchEvent(expectedEvent);
       },
     );
   });

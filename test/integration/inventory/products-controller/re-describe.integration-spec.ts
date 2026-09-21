@@ -21,8 +21,7 @@ describe(ProductController.name, () => {
     testApp.itTx(
       're-describes the seeded product and records a PRODUCT_WAS_RE_DESCRIBED event',
       async ({ app, txHost, now }) => {
-        const fixture =
-          ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const fixture = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
         const changes = { name: 'name2', description: 'description2' };
 
         const requestBody = fixture.makeReDescribeDto().with(changes).result;
@@ -34,18 +33,16 @@ describe(ProductController.name, () => {
           .with({ ...changes, updatedAt: now.toISOString() }).result;
         expect(response.body).toMatchDto(expectedResponse);
 
-        await expectInDB({ txHost, id: fixture.id }).toMatchEntity(
-          fixture.makeEntity().with({ ...changes, updatedAt: now }).result,
-        );
+        const expectedEntity = fixture.makeEntity().with({ ...changes, updatedAt: now }).result;
+        await expectInDB({ txHost, id: fixture.id }).toMatchEntity(expectedEntity);
 
-        await expectInDB({ txHost, aggregateId: fixture.id }).toMatchEvent(
-          fixture
-            .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
-            .with({
-              createdAt: now,
-              value: response.body,
-            }).result,
-        );
+        const expectedEvent = fixture
+          .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
+          .with({
+            createdAt: now,
+            value: response.body,
+          }).result;
+        await expectInDB({ txHost, aggregateId: fixture.id }).toMatchEvent(expectedEvent);
       },
     );
   });
