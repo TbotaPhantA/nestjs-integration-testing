@@ -8,7 +8,10 @@ import {
   ProductFixtures,
 } from '../../../shared/fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
-import { expectInDB } from '../../../shared/testing/matchers.js';
+import {
+  expectProductEventInDB,
+  expectProductInDB,
+} from '../../../shared/testing/expectations.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
 
@@ -21,24 +24,26 @@ describe(ProductController.name, () => {
     testApp.itTx(
       're-describes %s and records a PRODUCT_WAS_RE_DESCRIBED event',
       async ({ app, txHost, now }) => {
-        const fixture = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const fixture =
+          ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
         const changes = { name: 'name2', description: 'description2' };
 
         const requestBody = fixture.makeReDescribeDto().with(changes).result;
         const response = await productsClient(app).reDescribe(requestBody);
 
         expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-        expect(response.body).toMatchDto(
+        expect(response.body).toEqual(
           fixture
             .makeResponseDto()
-            .with({ ...changes, updatedAt: now.toISOString() }).result
+            .with({ ...changes, updatedAt: now.toISOString() }).result,
         );
-        await expectInDB({ txHost, id: fixture.id }).toMatchEntity(
-          fixture
-            .makeEntity()
-            .with({ ...changes, updatedAt: now }).result,
+        await expectProductInDB({ txHost, id: fixture.id }).toStrictEqual(
+          fixture.makeEntity().with({ ...changes, updatedAt: now }).result,
         );
-        await expectInDB({ txHost, aggregateId: fixture.id }).toMatchEvent(
+        await expectProductEventInDB({
+          txHost,
+          aggregateId: fixture.id,
+        }).toStrictEqual(
           fixture
             .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
             .with({

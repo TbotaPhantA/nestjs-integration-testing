@@ -7,6 +7,5 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.integration-spec.ts'],
-    setupFiles: ['./test/shared/testing/matchers.ts'],
   },
 });

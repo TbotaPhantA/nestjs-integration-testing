@@ -23,7 +23,7 @@ describe(ProductController.name, () => {
       const response = await productsClient(app).findById(fixture.id);
 
       expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-      expect(response.body).toMatchDto(fixture.makeResponseDto().result);
+      expect(response.body).toEqual(fixture.makeResponseDto().result);
     });
   });
 });
