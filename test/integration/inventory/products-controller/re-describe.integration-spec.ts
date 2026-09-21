@@ -1,108 +1,61 @@
-import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
-import { ProductController } from '../../../../src/inventory/product.controller.js';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../src/app.module.js';
-import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
-import { TransactionHost } from '@nestjs-cls/transactional';
-import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
-import { hashInt8 } from '../../../shared/utils/hashes/hashInt8.js';
-import {
-  ProductEntityBuilder,
-  ProductFixtureNamesEnum
-} from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
-import {
-  ReDescribeProductDtoBuilder
-} from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
+import { afterAll, describe } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { ProductDto } from '../../../../src/inventory/dto/product.dto.js';
+import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
-import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
-import { ProductEventEntity, ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import {
-  ProductEventEntityBuilder
-} from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
+  ProductEventEntity,
+  ProductEventNameEnum,
+} from '../../../../src/inventory/entities/productEvent.entity.js';
+import { productsClient } from '../../../shared/clients/products.client.js';
+import {
+  ProductFixtureNamesEnum,
+  ProductFixtures,
+} from '../../../shared/fixtures/inventory/products.fixtures.js';
+import { createTestSuite } from '../../../shared/testing/test-suite.js';
 
-describe(`${ProductController.name}`, () => {
-  let app: NestFastifyApplication;
-  let now: Date;
-  let txHost: TransactionHost<TransactionalAdapterTypeOrm>;
+const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
 
-  beforeAll(async () => {
-    now = new Date('2000-01-02T00:00:00.000Z')
-    vi.useFakeTimers({
-      toFake: ['Date']
-    });
-    vi.setSystemTime(now);
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    );
-
-    await app.init();
-    await app.getHttpAdapter().getInstance().ready();
-
-    txHost = app.get(TransactionHost<TransactionalAdapterTypeOrm>)
-  });
-
+describe(ProductController.name, () => {
   afterAll(async () => {
-    await app.close();
-    vi.useRealTimers();
+    await testApp.teardown();
   });
 
-  describe(`${ProductController.prototype.reDescribe.name}`, () => {
-    test('should successfully create new product and insert event', async () => {
-      await isolateInTransaction(async () => {
-        const id = hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString();
+  describe(ProductController.prototype.reDescribe.name, () => {
+    testApp.itTx(
+      're-describes the seeded product and records a PRODUCT_WAS_RE_DESCRIBED event',
+      async ({ app, txHost, now }) => {
+        const fixture =
+          ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const changes = { name: 'name2', description: 'description2' };
 
-        const { statusCode, body } = await app.inject({
-          method: 'PATCH',
-          url: `products/re-describe`,
-          body: ReDescribeProductDtoBuilder.defaultAll.with({
-            productId: id,
-            name: 'name2',
-            description: 'description2',
-          }).result,
-        });
+        const response = await productsClient(app).reDescribe(
+          fixture.reDescribeDto().with(changes).result,
+        );
 
-        const response = plainToInstance(ProductDto, JSON.parse(body))
+        expect(response).toRespondWith(HttpStatus.OK);
+        expect(response.body).toMatchDto(
+          fixture.dto().with({ ...changes, updatedAt: now.toISOString() })
+            .result,
+        );
 
-        expect(statusCode).toStrictEqual(HttpStatus.OK)
-        const expectedResponse = ProductDtoBuilder['DEFAULT_PRODUCT'].with({
-          name: 'name2',
-          description: 'description2',
-          updatedAt: now.toISOString(),
-        }).result;
-        expect(response).toStrictEqual(expectedResponse)
+        const product = await txHost.tx
+          .getRepository(ProductEntity)
+          .findOneOrFail({ where: { id: fixture.id } });
+        expect(product).toMatchEntity(
+          fixture.entity().with({ ...changes, updatedAt: now }).result,
+        );
 
-        const product = await txHost.tx.getRepository(ProductEntity)
-          .findOne({ where: { id }});
-        const expectedProduct = ProductEntityBuilder['DEFAULT_PRODUCT'].with({
-          name: 'name2',
-          description: 'description2',
-          updatedAt: now,
-        }).result;
-        expect(product).toStrictEqual(expectedProduct);
-
-        const productWasReDescribedEvent = await txHost.tx.getRepository(ProductEventEntity)
-          .findOne({ where: { aggregateId: id } })
-        const expectedProductEvent = ProductEventEntityBuilder.defaultAll
-          .with({
-            aggregateId: id,
+        const event = await txHost.tx
+          .getRepository(ProductEventEntity)
+          .findOneOrFail({ where: { aggregateId: fixture.id } });
+        expect(event).toMatchEvent(
+          fixture.event().with({
             eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
             createdAt: now,
-            value: expectedResponse,
-          })
-          .omit('messageId')
-          .result
-        expect(productWasReDescribedEvent).toMatchObject(expectedProductEvent)
-
-      }, txHost)
-    });
+            value: response.body,
+          }).result,
+        );
+      },
+    );
   });
 });

@@ -29,18 +29,24 @@ All `.ts` files import with `.js` extensions — required by `moduleResolution: 
 ## Integration test conventions
 
 - Integration tests live in `test/integration/` and use `*.integration-spec.ts` naming
-- They use a **separate vitest config** (`vitest.config.integration.ts`) from unit tests
-- Every integration test body must be wrapped in `isolateInTransaction(callback, txHost)` — this runs the test inside a DB transaction then rolls back, preventing test pollution
-- Obtain `txHost` via `app.get(TransactionHost<TransactionalAdapterTypeOrm>)` in `beforeAll`
-- Integration tests use `vi.useFakeTimers()` to freeze `Date` — call `vi.useRealTimers()` in `afterAll`
-- Integration tests spin up a full NestJS app with FastifyAdapter; call both `app.init()` and `app.getHttpAdapter().getInstance().ready()` before injecting requests
-- Use `app.inject({ method, url, body })` for HTTP assertions (not supertest)
+- They use a **separate vitest config** (`vitest.config.integration.ts`) from unit tests; custom matchers are registered via `setupFiles: ['./test/shared/testing/matchers.ts']`
+- Spin up the app with `const testApp = createTestSuite({ freezeDate?: string })` from `test/shared/testing/test-suite.ts`; call `await testApp.teardown()` in `afterAll`
+- **Write tests** (mutating DB) use `testApp.itTx(title, fn)` — the body runs inside a DB transaction that rolls back (isolation via `isolateInTransaction`), preventing test pollution. The body receives `{ app, txHost, now }`
+- **Read-only tests** (asserting against committed seed rows) use the regular global `it` and fetch the context with `await testApp.context()`
+- Concurrency is opt-in: wrap a block in `describe.concurrent`. Each test *file* runs in its own worker with its own app + connection pool, so within-file parallelism is capped by the pool size (`DB_POOL_SIZE`); across files it's free
+- `freezeDate` fakes `Date` for the whole file (one frozen clock). Tests derive expected timestamps from the `now` in the itTx context; fixtures carry UTC instants
+- Write flows that **modify a seeded row** must freeze at an instant *distinct* from the fixture's — meeting the seed's timestamp makes TypeORM regenerate the update-date as real time. `re-describe` therefore freezes at `2000-01-02` while the seed carries `2000-01-01`
+- HTTP calls go through per-controller clients (e.g. `productsClient(app)` from `test/shared/clients/products.client.ts`), which encapsulate method, path, and DTO parsing
+- Assertions use custom matchers: `toRespondWith(status)`, `toMatchDto(...)`, `toMatchEntity(...)`, `toMatchEvent(...)` (`toMatchEvent` ignores `messageId`)
+- Committed seed rows are a deliberate, Rails-fixtures-style pattern: `findById`-style reads reference `ProductFixtures[Enum]` whose deterministic `id` is `hashInt8(name)`. Seeding stays a dev-ops prerequisite (`make local-infra-up` / `make seeds-up`)
 
 ## Test fixtures
 
-- `test/shared/fixtures/builders/` — builder pattern using `InjectionBuilder<T>` with `.with({...})` and `.omit(...)` methods
-- Builder classes export static named factories (e.g., `CreateProductDtoBuilder.defaultAll()`, `ProductDtoBuilder['DEFAULT_PRODUCT']`)
-- Access the final value via `.result` on the builder
+- `test/shared/fixtures/inventory/products.fixtures.ts` — the fixture registry: `ProductFixtureNamesEnum` (names) + `ProductFixtures[Enum]` exposing `{ name, id, entity, dto, event, createDto, reDescribeDto }` builder factories with the hash-derived id pre-applied
+- Builders live in `test/shared/fixtures/builders/inventory/` — builder pattern using `InjectionBuilder<T>` with `.with({...})` and `.omit(...)` methods; every factory is a `defaultAll()` method and returns a fresh builder
+- Builder defaults carry the placeholder id `'1'`; the fixture registry overrides it with `hashInt8(fixtureName)`
+- Access the final value via `.result` on the builder; each `.defaultAll()` call returns a new builder so `.with(...)` never leaks state
+- `seeds/` consumes the same fixture registry (`seeds/fixtures/products.ts`), keeping dev seeding and test fixtures in one place
 
 ## Database / migrations
 

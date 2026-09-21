@@ -3,14 +3,15 @@ import { ReDescribeProductDto } from '../../../../../../src/inventory/dto/reDesc
 import { ProductEntityBuilder } from '../entities/productEntity.builder.js';
 
 export class ReDescribeProductDtoBuilder {
-  static get defaultAll(): InjectionBuilder<ReDescribeProductDto> {
-    const defaultProduct = ProductEntityBuilder['DEFAULT_PRODUCT'].result
+  static defaultAll(): InjectionBuilder<ReDescribeProductDto> {
+    const defaultProduct = ProductEntityBuilder.defaultAll().result;
 
-    return new InjectionBuilder<ReDescribeProductDto>(new ReDescribeProductDto())
-      .with({
-        productId: defaultProduct.id,
-        name: 'name',
-        description: 'description',
-      })
+    return new InjectionBuilder<ReDescribeProductDto>(
+      new ReDescribeProductDto(),
+    ).with({
+      productId: defaultProduct.id,
+      name: 'name',
+      description: 'description',
+    });
   }
 }

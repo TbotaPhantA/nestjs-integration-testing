@@ -1,50 +1,29 @@
-import { ProductController } from '../../../../src/inventory/product.controller.js';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from '../../../../src/app.module.js';
-import { Test } from '@nestjs/testing';
-import { hashInt8 } from '../../../shared/utils/hashes/hashInt8.js';
-import {
-  ProductFixtureNamesEnum
-} from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import { afterAll, describe } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
-import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
-import { plainToInstance } from 'class-transformer';
-import { ProductDto } from '../../../../src/inventory/dto/product.dto.js';
-import { afterAll } from 'vitest';
+import { ProductController } from '../../../../src/inventory/product.controller.js';
+import { productsClient } from '../../../shared/clients/products.client.js';
+import {
+  ProductFixtureNamesEnum,
+  ProductFixtures,
+} from '../../../shared/fixtures/inventory/products.fixtures.js';
+import { createTestSuite } from '../../../shared/testing/test-suite.js';
 
-describe(`${ProductController.name}`, () => {
-  let app: NestFastifyApplication;
+const testApp = createTestSuite();
 
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile()
-
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    );
-
-    await app.init();
-    await app.getHttpAdapter().getInstance().ready();
-  })
-
+describe(ProductController.name, () => {
   afterAll(async () => {
-    await app.close();
+    await testApp.teardown();
   });
 
-  describe(`${ProductController.prototype.findById.name}`, () => {
-    test('should successfully find created product', async () => {
-      const productId = hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT)
+  describe(ProductController.prototype.findById.name, () => {
+    it('returns the seeded product by id', async () => {
+      const fixture = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+      const { app } = await testApp.context();
 
-      const { statusCode, body } = await app.inject({
-        method: 'GET',
-        url: `products/find-by-id/${productId}`
-      })
+      const response = await productsClient(app).findById(fixture.id);
 
-      const response = plainToInstance(ProductDto, JSON.parse(body))
-
-      expect(statusCode).toStrictEqual(HttpStatus.OK)
-      expect(response).toStrictEqual(ProductDtoBuilder['DEFAULT_PRODUCT'].result)
-    })
+      expect(response).toRespondWith(HttpStatus.OK);
+      expect(response.body).toMatchDto(fixture.dto().result);
+    });
   });
 });

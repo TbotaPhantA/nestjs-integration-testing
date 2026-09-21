@@ -3,11 +3,10 @@ import { CreateProductDto } from '../../../../../../src/inventory/dto/createProd
 
 export class CreateProductDtoBuilder {
   static defaultAll(): InjectionBuilder<CreateProductDto> {
-    return new InjectionBuilder<CreateProductDto>(new CreateProductDto())
-      .with({
-        name: 'name',
-        description: 'description',
-        quantity: 5,
-      })
+    return new InjectionBuilder<CreateProductDto>(new CreateProductDto()).with({
+      name: 'name',
+      description: 'description',
+      quantity: 5,
+    });
   }
 }
