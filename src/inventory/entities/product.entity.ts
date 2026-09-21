@@ -83,6 +83,7 @@ export class ProductEntity {
   reDescribe(dto: ReDescribeProductDto): void {
     this.name = dto.name
     this.description = dto.description
+    this.updatedAt = new Date()
     this.#uncommittedEvents.push(
       ProductEventEntity.create({
         eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,

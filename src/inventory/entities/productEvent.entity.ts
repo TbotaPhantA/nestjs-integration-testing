@@ -55,7 +55,7 @@ export class ProductEventEntity {
       eventName,
       aggregateId: value.id,
       value: ProductDto.from(value),
-      createdAt: value.createdAt,
+      createdAt: value.updatedAt,
     })
   }
 }
