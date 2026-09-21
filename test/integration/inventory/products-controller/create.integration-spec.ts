@@ -24,11 +24,11 @@ describe(ProductController.name, () => {
       'creates a product and records a PRODUCT_WAS_CREATED event',
       async ({ app, txHost, now }) => {
         const requestBody = ProductDtoBuilder.defaultAll().result;
-        const response = await productsClient(app).create(requestBody);
-        const id = response.body.id;
+        const { statusCode, body } = await productsClient(app).create(requestBody);
+        const id = body.id;
 
-        expect(response.statusCode).toStrictEqual(HttpStatus.CREATED);
-        expect(response.body).toStrictEqual(
+        expect(statusCode).toStrictEqual(HttpStatus.CREATED);
+        expect(body).toStrictEqual(
           ProductDtoBuilder.defaultAll().with({
             id,
           }).result,
@@ -43,7 +43,7 @@ describe(ProductController.name, () => {
             eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
             aggregateId: id,
             createdAt: now,
-            value: response.body,
+            value: body,
           }).result,
         );
       },

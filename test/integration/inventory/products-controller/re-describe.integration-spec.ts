@@ -39,10 +39,10 @@ describe(ProductController.name, () => {
           .defaultAll()
           .with({ productId: id, ...changes })
           .result
-        const response = await productsClient(app).reDescribe(requestBody);
+        const { statusCode, body } = await productsClient(app).reDescribe(requestBody);
 
-        expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-        expect(response.body).toStrictEqual(
+        expect(statusCode).toStrictEqual(HttpStatus.OK);
+        expect(body).toStrictEqual(
           ProductDtoBuilder.defaultAll()
             .with({ id, ...changes, updatedAt: now.toISOString() }).result,
         );
@@ -58,7 +58,7 @@ describe(ProductController.name, () => {
               aggregateId: id,
               eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
               createdAt: now,
-              value: response.body,
+              value: body,
             }).result,
         );
       },
