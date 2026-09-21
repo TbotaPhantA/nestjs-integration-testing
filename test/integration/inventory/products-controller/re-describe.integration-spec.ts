@@ -12,6 +12,14 @@ import {
   expectProductEventInDB,
   expectProductInDB,
 } from '../../../shared/testing/expectations.js';
+import {
+  ReDescribeProductDtoBuilder
+} from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
+import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
+import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import {
+  ProductEventEntityBuilder
+} from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
 
@@ -24,29 +32,31 @@ describe(ProductController.name, () => {
     testApp.itTx(
       're-describes %s and records a PRODUCT_WAS_RE_DESCRIBED event',
       async ({ app, txHost, now }) => {
-        const fixture =
-          ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
         const changes = { name: 'name2', description: 'description2' };
 
-        const requestBody = fixture.makeReDescribeDto().with(changes).result;
+        const requestBody = ReDescribeProductDtoBuilder
+          .defaultAll()
+          .with({ productId: id, ...changes })
+          .result
         const response = await productsClient(app).reDescribe(requestBody);
 
         expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-        expect(response.body).toEqual(
-          fixture
-            .makeResponseDto()
-            .with({ ...changes, updatedAt: now.toISOString() }).result,
+        expect(response.body).toStrictEqual(
+          ProductDtoBuilder.defaultAll()
+            .with({ id, ...changes, updatedAt: now.toISOString() }).result,
         );
-        await expectProductInDB({ txHost, id: fixture.id }).toStrictEqual(
-          fixture.makeEntity().with({ ...changes, updatedAt: now }).result,
+        await expectProductInDB({ txHost, id }).toStrictEqual(
+          ProductEntityBuilder.defaultAll().with({ id, ...changes, updatedAt: now }).result,
         );
         await expectProductEventInDB({
           txHost,
-          aggregateId: fixture.id,
+          aggregateId: id,
         }).toStrictEqual(
-          fixture
-            .makeEvent(ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED)
+          ProductEventEntityBuilder.defaultAll()
             .with({
+              aggregateId: id,
+              eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
               createdAt: now,
               value: response.body,
             }).result,

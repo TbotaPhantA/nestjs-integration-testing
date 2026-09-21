@@ -28,7 +28,7 @@ describe(ProductController.name, () => {
         const id = response.body.id;
 
         expect(response.statusCode).toStrictEqual(HttpStatus.CREATED);
-        expect(response.body).toEqual(
+        expect(response.body).toStrictEqual(
           ProductDtoBuilder.defaultAll().with({
             id,
           }).result,
