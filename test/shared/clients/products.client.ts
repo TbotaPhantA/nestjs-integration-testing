@@ -11,30 +11,38 @@ export interface TestResponse<T> {
   body: T;
 }
 
+export interface ErrorResponseBody {
+  statusCode: HttpStatus;
+  message: string;
+  error: string;
+}
+
+type TestResponseBody = ProductResponseDto | ErrorResponseBody;
+
 export class ProductsClient {
   constructor(private readonly app: NestFastifyApplication) {}
 
-  async create(dto: CreateProductDto): Promise<TestResponse<ProductResponseDto>> {
+  async create(dto: CreateProductDto): Promise<TestResponse<TestResponseBody>> {
     return this.request('POST', 'products/create', dto);
   }
 
-  async findById(id: string): Promise<TestResponse<ProductResponseDto>> {
+  async findById(id: string): Promise<TestResponse<TestResponseBody>> {
     return this.request('GET', `products/find-by-id/${id}`);
   }
 
   async reDescribe(
     dto: ReDescribeProductDto,
-  ): Promise<TestResponse<ProductResponseDto>> {
+  ): Promise<TestResponse<TestResponseBody>> {
     return this.request('PATCH', 'products/re-describe', dto);
   }
 
-  async delete(id: string): Promise<TestResponse<ProductResponseDto>> {
+  async delete(id: string): Promise<TestResponse<TestResponseBody>> {
     return this.request('DELETE', `products/delete/${id}`)
   }
 
   async changeQuantity(
     dto: ChangeQuantityDto,
-  ): Promise<TestResponse<ProductResponseDto>> {
+  ): Promise<TestResponse<TestResponseBody>> {
     return this.request('PATCH', 'products/change-quantity', dto);
   }
 
@@ -42,16 +50,25 @@ export class ProductsClient {
     method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     url: string,
     body?: object,
-  ): Promise<TestResponse<ProductResponseDto>> {
+  ): Promise<TestResponse<TestResponseBody>> {
     const { statusCode, body: rawBody } = await this.app.inject({
       method,
       url,
       body,
     });
 
+    const parsedBody: TestResponseBody = JSON.parse(rawBody);
+
+    if (statusCode >= 400) {
+      return {
+        statusCode,
+        body: parsedBody as ErrorResponseBody,
+      };
+    }
+
     return {
       statusCode,
-      body: plainToInstance(ProductResponseDto, JSON.parse(rawBody)),
+      body: plainToInstance(ProductResponseDto, parsedBody),
     };
   }
 }

@@ -17,6 +17,7 @@ import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventor
 import {
   ProductEventEntityBuilder
 } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
+import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inventory/dto/errorResponseBody.builder.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
 
@@ -60,5 +61,26 @@ describe(ProductController.name, () => {
         await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(expectedEvent);
       },
     );
+
+    describe('unhappy path', () => {
+      testApp.itTx(
+        'returns Bad Request when the product does not exist',
+        async ({ app }) => {
+          const productId = ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const expectedErrorBody = ErrorResponseBodyBuilder
+            .defaultAll()
+            .with({
+              statusCode: HttpStatus.BAD_REQUEST,
+              message: `Product ${productId} not found!`,
+            })
+            .result;
+
+          const { statusCode, body } = await productsClient(app).delete(productId);
+
+          expect(statusCode).toStrictEqual(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual(expectedErrorBody);
+        },
+      );
+    });
   });
 });

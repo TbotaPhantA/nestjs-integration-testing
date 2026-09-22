@@ -19,6 +19,7 @@ import {
 } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
 import { ChangeQuantityDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/changeQuantityDto.builder.js';
+import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inventory/dto/errorResponseBody.builder.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z', poolSize: 2 });
 
@@ -107,6 +108,31 @@ describe(ProductController.name, () => {
         expect(body).toStrictEqual(expectedResponse);
         await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
         await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(expectedEvent);
+      },
+    );
+  });
+
+  describe('unhappy path', () => {
+    testApp.itTx(
+      'returns Bad Request when the product does not exist',
+      async ({ app }) => {
+        const productId = ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+        const requestBody = ChangeQuantityDtoBuilder
+          .defaultAll()
+          .with({ productId })
+          .result;
+        const expectedErrorBody = ErrorResponseBodyBuilder
+          .defaultAll()
+          .with({
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Product ${productId} not found!`,
+          })
+          .result;
+
+        const { statusCode, body } = await productsClient(app).changeQuantity(requestBody);
+
+        expect(statusCode).toStrictEqual(HttpStatus.BAD_REQUEST);
+        expect(body).toStrictEqual(expectedErrorBody);
       },
     );
   });

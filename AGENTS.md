@@ -11,7 +11,7 @@
 - `npm run lint` — oxlint (not ESLint)
 - `npm run format` — prettier (single quotes, trailing commas)
 - `npm run build` — nest build, output to `dist/`
-- `make test-int FILES=<pattern>` — run specific integration test file(s)
+- `make test-int` — run all integration tests (equivalent to `npm run test:integration`, but loads env via `--env-file=.env`); requires running Postgres. Filter to specific file(s) with `FILES`, e.g. `make test-int FILES="test/integration/inventory/products-controller/findById.integration-spec.ts"`
 
 ## Architecture
 
@@ -48,6 +48,7 @@ All `.ts` files import with `.js` extensions — required by `moduleResolution: 
 - Builder defaults carry the placeholder id `'1'`; the fixture registry overrides it with `hashInt8(fixtureName)`
 - Access the final value via `.result` on the builder; each `.defaultAll()` call returns a new builder so `.with(...)` never leaks state
 - `seeds/` consumes the same fixture registry (`seeds/fixtures/products.ts`), keeping dev seeding and test fixtures in one place
+- `test/shared/fixtures/builders/inventory/dto/errorResponseBody.builder.ts` — builds the error payload shape (`{ statusCode, message, error }`) for unhappy-path assertions; `ProductsClient` returns raw parsed JSON for HTTP >= 400, so the body is a plain object that `toStrictEqual` matches against this builder's `.result`
 
 ## Database / migrations
 

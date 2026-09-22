@@ -4,6 +4,7 @@ import { InjectionBuilder } from '../../utils/injectionBuilder.js';
 
 export enum ProductFixtureNamesEnum {
   DEFAULT_PRODUCT = 'DEFAULT_PRODUCT',
+  NON_EXISTENT_PRODUCT = 'NON_EXISTENT_PRODUCT',
 }
 
 export interface ProductFixture {
@@ -15,6 +16,9 @@ export interface ProductFixture {
 export const ProductFixtures = {
   [ProductFixtureNamesEnum.DEFAULT_PRODUCT]: productFixture(
     ProductFixtureNamesEnum.DEFAULT_PRODUCT,
+  ),
+  [ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT]: productFixture(
+    ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT,
   ),
 } satisfies Record<ProductFixtureNamesEnum, ProductFixture>;
 

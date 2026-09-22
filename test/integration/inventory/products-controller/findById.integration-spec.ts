@@ -8,6 +8,7 @@ import {
 } from '../../../shared/fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
+import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inventory/dto/errorResponseBody.builder.js';
 
 const testApp = createTestSuite();
 
@@ -26,6 +27,27 @@ describe(ProductController.name, () => {
 
       expect(response.statusCode).toStrictEqual(HttpStatus.OK);
       expect(response.body).toEqual(expectedResponse);
+    });
+
+    describe('unhappy path', () => {
+      testApp.itTx(
+        'returns Bad Request when the product does not exist',
+        async ({ app }) => {
+          const productId = ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const expectedErrorBody = ErrorResponseBodyBuilder
+            .defaultAll()
+            .with({
+              statusCode: HttpStatus.BAD_REQUEST,
+              message: `Product ${productId} not found!`,
+            })
+            .result;
+
+          const response = await productsClient(app).findById(productId);
+
+          expect(response.statusCode).toStrictEqual(HttpStatus.BAD_REQUEST);
+          expect(response.body).toStrictEqual(expectedErrorBody);
+        },
+      );
     });
   });
 });

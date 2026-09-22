@@ -11,6 +11,7 @@ import {
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
+import type { ProductResponseDto } from '../../../../src/inventory/dto/productResponseDto.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-01T00:00:00.000Z' });
 
@@ -27,7 +28,7 @@ describe(ProductController.name, () => {
 
         const { statusCode, body } = await productsClient(app).create(requestBody);
 
-        const id = body.id;
+        const id = (body as ProductResponseDto).id;
         const expectedResponse = ProductDtoBuilder
           .defaultAll()
           .with({
@@ -42,7 +43,7 @@ describe(ProductController.name, () => {
           eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
           aggregateId: id,
           createdAt: now,
-          value: body,
+          value: body as ProductResponseDto,
         }).result
 
 
