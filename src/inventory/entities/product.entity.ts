@@ -106,8 +106,9 @@ export class ProductEntity {
   }
 
   markAsDeleted() {
-    this.updatedAt = new Date()
-    this.removedAt = new Date()
+    const now = new Date()
+    this.updatedAt = now
+    this.removedAt = now
     this.#uncommittedEvents.push(
       ProductEventEntity.create({
         eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
