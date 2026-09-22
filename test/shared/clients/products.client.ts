@@ -28,6 +28,10 @@ export class ProductsClient {
     return this.request('PATCH', 'products/re-describe', dto);
   }
 
+  async delete(id: string): Promise<TestResponse<ProductResponseDto>> {
+    return this.request('DELETE', `products/delete/${id}`)
+  }
+
   async changeQuantity(
     dto: ChangeQuantityDto,
   ): Promise<TestResponse<ProductResponseDto>> {
@@ -35,7 +39,7 @@ export class ProductsClient {
   }
 
   private async request(
-    method: 'GET' | 'POST' | 'PATCH',
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     url: string,
     body?: object,
   ): Promise<TestResponse<ProductResponseDto>> {

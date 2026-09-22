@@ -29,7 +29,7 @@ export function expectProductInDB(
     async toStrictEqual(expected) {
       const actual = await ctx.txHost.tx
         .getRepository(ProductEntity)
-        .findOne({ where: { id: ctx.id } });
+        .findOne({ where: { id: ctx.id }, withDeleted: true });
 
       expect(actual).toStrictEqual(expected);
     },
