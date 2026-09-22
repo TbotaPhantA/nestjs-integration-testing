@@ -20,7 +20,7 @@ import {
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
 import { ChangeQuantityDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/changeQuantityDto.builder.js';
 
-const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z', poolSize: 3 });
+const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z', poolSize: 2 });
 
 describe(ProductController.name, () => {
   afterAll(async () => {
