@@ -15,11 +15,11 @@ export interface EventMatchContext {
 }
 
 export interface ProductDBExpectation {
-  toStrictEqual(expected: ProductEntity | undefined): Promise<void>;
+  toStrictEqual(expected: ProductEntity | null): Promise<void>;
 }
 
 export interface ProductEventDBExpectation {
-  toStrictEqual(expected: ProductEventEntity | undefined): Promise<void>;
+  toStrictEqual(expected: ProductEventEntity | null): Promise<void>;
 }
 
 export function expectProductInDB(
