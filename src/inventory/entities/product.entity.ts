@@ -99,6 +99,7 @@ export class ProductEntity {
       ? ProductEventNameEnum.PRODUCT_QUANTITY_WAS_INCREASED
       : ProductEventNameEnum.PRODUCT_QUANTITY_WAS_REDUCED
     this.quantity = dto.quantity
+    this.updatedAt = new Date()
     this.#uncommittedEvents.push(
       ProductEventEntity.create({ eventName, value: this })
     )

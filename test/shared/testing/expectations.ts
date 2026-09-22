@@ -15,11 +15,11 @@ export interface EventMatchContext {
 }
 
 export interface ProductDBExpectation {
-  toStrictEqual(expected: ProductEntity): Promise<void>;
+  toStrictEqual(expected: ProductEntity | undefined): Promise<void>;
 }
 
 export interface ProductEventDBExpectation {
-  toStrictEqual(expected: ProductEventEntity): Promise<void>;
+  toStrictEqual(expected: ProductEventEntity | undefined): Promise<void>;
 }
 
 export function expectProductInDB(
@@ -48,14 +48,18 @@ export function expectProductEventInDB(
           order: { messageId: 'DESC' },
         });
 
-      const { messageId: _messageId, ...rest } = expected;
+      if (!expected) {
+        expect(actual).toStrictEqual(expected)
+      } else {
+        const { messageId: _messageId, ...rest } = expected;
 
-      expect(actual).toStrictEqual(
-        ProductEventEntity.createFromRaw({
-          ...rest,
-          messageId: expect.any(String) as unknown as string,
-        }),
-      );
+        expect(actual).toStrictEqual(
+          ProductEventEntity.createFromRaw({
+            ...rest,
+            messageId: expect.any(String) as unknown as string,
+          }),
+        );
+      }
     },
   };
 }

@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { CreateProductDto } from '../../../src/inventory/dto/createProduct.dto.js';
 import { ProductResponseDto } from '../../../src/inventory/dto/productResponseDto.js';
 import { ReDescribeProductDto } from '../../../src/inventory/dto/reDescribeProduct.dto.js';
+import { ChangeQuantityDto } from '../../../src/inventory/dto/changeQuantity.dto.js';
 
 export interface TestResponse<T> {
   statusCode: HttpStatus;
@@ -25,6 +26,12 @@ export class ProductsClient {
     dto: ReDescribeProductDto,
   ): Promise<TestResponse<ProductResponseDto>> {
     return this.request('PATCH', 'products/re-describe', dto);
+  }
+
+  async changeQuantity(
+    dto: ChangeQuantityDto,
+  ): Promise<TestResponse<ProductResponseDto>> {
+    return this.request('PATCH', 'products/change-quantity', dto);
   }
 
   private async request(

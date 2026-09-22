@@ -12,33 +12,69 @@ import {
   expectProductEventInDB,
   expectProductInDB,
 } from '../../../shared/testing/expectations.js';
-import {
-  ReDescribeProductDtoBuilder
-} from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import {
   ProductEventEntityBuilder
 } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
+import { ChangeQuantityDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/changeQuantityDto.builder.js';
 
-const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
+const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z', poolSize: 3 });
 
 describe(ProductController.name, () => {
   afterAll(async () => {
     await testApp.teardown();
   });
 
-  describe(ProductController.prototype.reDescribe.name, () => {
-    testApp.itTx(
-      'should successfully redescribe a product',
-      async ({ app, txHost, now }) => {
+  describe.concurrent(ProductController.prototype.changeQuantity.name, () => {
+    testApp.itTx('should not change quantity', async ({ app, txHost }) => {
+      const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+
+      const requestBody = ChangeQuantityDtoBuilder
+        .defaultAll()
+        .with({
+          quantity: 5, // same quantity as in fixture
+          productId: id,
+        }).result;
+      const expectedResponse = ProductDtoBuilder
+        .defaultAll()
+        .with({
+          id,
+        }).result;
+      const expectedEntity = ProductEntityBuilder.defaultAll()
+        .with({
+          id,
+        }).result;
+      const expectedEvent = null;
+
+      const { statusCode, body } = await productsClient(app).changeQuantity(requestBody);
+
+      expect(statusCode).toStrictEqual(HttpStatus.OK);
+      expect(body).toStrictEqual(expectedResponse);
+      await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
+      await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(expectedEvent);
+    })
+
+    const testCases = [
+      {
+        toString: () => '1 should successfully increase the quantity',
+        changes: { quantity: 100 } satisfies Partial<ProductEntity>,
+        expectedEventName: ProductEventNameEnum.PRODUCT_QUANTITY_WAS_INCREASED
+      },
+      {
+        toString: () => '2 should successfully reduce the quantity',
+        changes: { quantity: 1 } satisfies Partial<ProductEntity>,
+        expectedEventName: ProductEventNameEnum.PRODUCT_QUANTITY_WAS_REDUCED
+      },
+    ]
+
+    testApp.itTx.each(testCases)(
+      '%s',
+      async ({ app, txHost, now }, { changes, expectedEventName }) => {
         const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
-        const changes = {
-          name: 'name2',
-          description: 'description2',
-        } satisfies Partial<ProductEntity>;
-        const requestBody = ReDescribeProductDtoBuilder
+
+        const requestBody = ChangeQuantityDtoBuilder
           .defaultAll()
           .with({
             ...changes,
@@ -60,12 +96,12 @@ describe(ProductController.name, () => {
         const expectedEvent = ProductEventEntityBuilder.defaultAll()
           .with({
             aggregateId: id,
-            eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
+            eventName: expectedEventName,
             createdAt: now,
             value: expectedResponse,
           }).result;
 
-        const { statusCode, body } = await productsClient(app).reDescribe(requestBody);
+        const { statusCode, body } = await productsClient(app).changeQuantity(requestBody);
 
         expect(statusCode).toStrictEqual(HttpStatus.OK);
         expect(body).toStrictEqual(expectedResponse);
