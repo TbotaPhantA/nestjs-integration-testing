@@ -35,15 +35,14 @@ describe(ProductController.name, () => {
       testApp.itTx(
         'returns Bad Request when the product does not exist',
         async ({ app }) => {
-          const productId =
-            ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const nonExistentProductId = '9999889999';
           const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
             statusCode: HttpStatus.BAD_REQUEST,
-            message: `Product ${productId} not found!`,
+            message: `Product ${nonExistentProductId} not found!`,
           }).result;
 
           const { body } = await productsClient(app)
-            .findById(productId)
+            .findById(nonExistentProductId)
             .expectStatus(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual(expectedErrorBody);
         },

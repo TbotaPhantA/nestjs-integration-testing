@@ -4,7 +4,6 @@ import { InjectionBuilder } from '../../utils/injectionBuilder.js';
 
 export enum ProductFixtureNamesEnum {
   DEFAULT_PRODUCT = 'DEFAULT_PRODUCT',
-  NON_EXISTENT_PRODUCT = 'NON_EXISTENT_PRODUCT',
 }
 
 export interface ProductFixture {
@@ -14,20 +13,10 @@ export interface ProductFixture {
 }
 
 export const ProductFixtures = {
-  [ProductFixtureNamesEnum.DEFAULT_PRODUCT]: productFixture(
-    ProductFixtureNamesEnum.DEFAULT_PRODUCT,
-  ),
-  [ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT]: productFixture(
-    ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT,
-  ),
+  [ProductFixtureNamesEnum.DEFAULT_PRODUCT]: {
+    name: ProductFixtureNamesEnum.DEFAULT_PRODUCT,
+    id: hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString(),
+    value: () => ProductEntityBuilder.defaultAll().with({ id: hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString() }),
+  },
 } satisfies Record<ProductFixtureNamesEnum, ProductFixture>;
 
-function productFixture(name: ProductFixtureNamesEnum): ProductFixture {
-  const id = hashInt8(name).toString();
-
-  return {
-    name,
-    id,
-    value: () => ProductEntityBuilder.defaultAll().with({ id }),
-  };
-}
