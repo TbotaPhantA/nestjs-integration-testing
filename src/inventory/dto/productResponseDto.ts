@@ -3,35 +3,35 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ProductResponseDto {
   @ApiProperty()
-  id: string
+  id: string;
 
   @ApiProperty()
-  name: string
+  name: string;
 
   @ApiProperty()
-  description: string
+  description: string;
 
   @ApiProperty()
-  quantity: number
+  quantity: number;
 
   @ApiProperty()
-  createdAt: string
+  createdAt: string;
 
   @ApiProperty()
-  updatedAt: string
+  updatedAt: string;
 
   @ApiProperty()
-  removedAt: string | null
+  removedAt: string | null;
 
   static from(product: ProductEntity): ProductResponseDto {
-    const dto = new ProductResponseDto()
-    dto.id = product.id.toString()
-    dto.name = product.name
-    dto.description = product.description
-    dto.quantity = product.quantity
-    dto.createdAt = product.createdAt.toISOString()
-    dto.updatedAt = product.updatedAt.toISOString()
-    dto.removedAt = product.removedAt?.toISOString() ?? null
-    return dto
+    const dto = new ProductResponseDto();
+    dto.id = product.id.toString();
+    dto.name = product.name;
+    dto.description = product.description;
+    dto.quantity = product.quantity;
+    dto.createdAt = product.createdAt.toISOString();
+    dto.updatedAt = product.updatedAt.toISOString();
+    dto.removedAt = product.removedAt?.toISOString() ?? null;
+    return dto;
   }
 }

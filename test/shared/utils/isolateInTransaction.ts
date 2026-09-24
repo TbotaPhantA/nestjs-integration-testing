@@ -5,7 +5,7 @@ const ROLLBACK = Symbol('ROLLBACK');
 
 export async function isolateInTransaction<T>(
   callback: () => Promise<T>,
-  txHost: TransactionHost<TransactionalAdapterTypeOrm>
+  txHost: TransactionHost<TransactionalAdapterTypeOrm>,
 ): Promise<T> {
   let result!: T;
 

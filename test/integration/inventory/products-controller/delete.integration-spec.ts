@@ -14,9 +14,7 @@ import {
 } from '../../../shared/testing/expectations.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
-import {
-  ProductEventEntityBuilder
-} from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
+import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inventory/dto/errorResponseBody.builder.js';
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
@@ -32,33 +30,32 @@ describe(ProductController.name, () => {
       async ({ app, txHost, now }) => {
         const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
 
-        const expectedResponse = ProductDtoBuilder
-          .defaultAll()
-          .with({
-            id,
-            updatedAt: now.toISOString(),
-            removedAt: now.toISOString(),
-          }).result;
-        const expectedEntity = ProductEntityBuilder.defaultAll()
-          .with({
-            id,
-            updatedAt: now,
-            removedAt: now,
-          }).result;
-        const expectedEvent = ProductEventEntityBuilder.defaultAll()
-          .with({
-            aggregateId: id,
-            eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
-            createdAt: now,
-            value: expectedResponse,
-          }).result;
+        const expectedResponse = ProductDtoBuilder.defaultAll().with({
+          id,
+          updatedAt: now.toISOString(),
+          removedAt: now.toISOString(),
+        }).result;
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          id,
+          updatedAt: now,
+          removedAt: now,
+        }).result;
+        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+          aggregateId: id,
+          eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
+          createdAt: now,
+          value: expectedResponse,
+        }).result;
 
-        const { statusCode, body } = await productsClient(app).delete(id);
+        const { body } = await productsClient(app)
+          .delete(id)
+          .expectStatus(HttpStatus.OK);
 
-        expect(statusCode).toStrictEqual(HttpStatus.OK);
         expect(body).toStrictEqual(expectedResponse);
         await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
-        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(expectedEvent);
+        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
+          expectedEvent,
+        );
       },
     );
 
@@ -66,18 +63,16 @@ describe(ProductController.name, () => {
       testApp.itTx(
         'returns Bad Request when the product does not exist',
         async ({ app }) => {
-          const productId = ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
-          const expectedErrorBody = ErrorResponseBodyBuilder
-            .defaultAll()
-            .with({
-              statusCode: HttpStatus.BAD_REQUEST,
-              message: `Product ${productId} not found!`,
-            })
-            .result;
+          const productId =
+            ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Product ${productId} not found!`,
+          }).result;
 
-          const { statusCode, body } = await productsClient(app).delete(productId);
-
-          expect(statusCode).toStrictEqual(HttpStatus.BAD_REQUEST);
+          const { body } = await productsClient(app)
+            .delete(productId)
+            .expectStatus(HttpStatus.BAD_REQUEST);
           expect(body).toStrictEqual(expectedErrorBody);
         },
       );

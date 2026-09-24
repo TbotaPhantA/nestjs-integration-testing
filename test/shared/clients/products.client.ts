@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import type { HttpStatus } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { plainToInstance } from 'class-transformer';
@@ -6,70 +7,90 @@ import { ProductResponseDto } from '../../../src/inventory/dto/productResponseDt
 import { ReDescribeProductDto } from '../../../src/inventory/dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from '../../../src/inventory/dto/changeQuantity.dto.js';
 
-export interface TestResponse<T> {
-  statusCode: HttpStatus;
-  body: T;
-}
-
 export interface ErrorResponseBody {
   statusCode: HttpStatus;
   message: string;
   error: string;
 }
 
-type TestResponseBody = ProductResponseDto | ErrorResponseBody;
+export type ProductSuccessStatus = HttpStatus.OK | HttpStatus.CREATED;
+
+export interface ProductSuccessResponse {
+  statusCode: ProductSuccessStatus;
+  body: ProductResponseDto;
+}
+
+export interface ProductErrorResponse {
+  statusCode: Exclude<HttpStatus, ProductSuccessStatus>;
+  body: ErrorResponseBody;
+}
+
+export type ProductResponse = ProductSuccessResponse | ProductErrorResponse;
+
+export class ProductRequest<R extends ProductResponse> {
+  constructor(private readonly promise: Promise<R>) {}
+
+  expectStatus<T extends HttpStatus>(
+    expected: T,
+  ): Promise<R & { statusCode: T }> {
+    return this.promise.then((response) => {
+      expect(response.statusCode).toStrictEqual(expected);
+      return response as R & { statusCode: T };
+    });
+  }
+}
 
 export class ProductsClient {
   constructor(private readonly app: NestFastifyApplication) {}
 
-  async create(dto: CreateProductDto): Promise<TestResponse<TestResponseBody>> {
-    return this.request('POST', 'products/create', dto);
+  create(dto: CreateProductDto): ProductRequest<ProductResponse> {
+    return new ProductRequest(this.request('POST', 'products/create', dto));
   }
 
-  async findById(id: string): Promise<TestResponse<TestResponseBody>> {
-    return this.request('GET', `products/find-by-id/${id}`);
+  findById(id: string): ProductRequest<ProductResponse> {
+    return new ProductRequest(this.request('GET', `products/find-by-id/${id}`));
   }
 
-  async reDescribe(
-    dto: ReDescribeProductDto,
-  ): Promise<TestResponse<TestResponseBody>> {
-    return this.request('PATCH', 'products/re-describe', dto);
+  reDescribe(dto: ReDescribeProductDto): ProductRequest<ProductResponse> {
+    return new ProductRequest(
+      this.request('PATCH', 'products/re-describe', dto),
+    );
   }
 
-  async delete(id: string): Promise<TestResponse<TestResponseBody>> {
-    return this.request('DELETE', `products/delete/${id}`)
+  delete(id: string): ProductRequest<ProductResponse> {
+    return new ProductRequest(this.request('DELETE', `products/delete/${id}`));
   }
 
-  async changeQuantity(
-    dto: ChangeQuantityDto,
-  ): Promise<TestResponse<TestResponseBody>> {
-    return this.request('PATCH', 'products/change-quantity', dto);
+  changeQuantity(dto: ChangeQuantityDto): ProductRequest<ProductResponse> {
+    return new ProductRequest(
+      this.request('PATCH', 'products/change-quantity', dto),
+    );
   }
 
   private async request(
     method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     url: string,
     body?: object,
-  ): Promise<TestResponse<TestResponseBody>> {
+  ): Promise<ProductResponse> {
     const { statusCode, body: rawBody } = await this.app.inject({
       method,
       url,
       body,
     });
 
-    const parsedBody: TestResponseBody = JSON.parse(rawBody);
+    const parsedBody = JSON.parse(rawBody);
 
     if (statusCode >= 400) {
       return {
         statusCode,
         body: parsedBody as ErrorResponseBody,
-      };
+      } as ProductErrorResponse;
     }
 
     return {
       statusCode,
       body: plainToInstance(ProductResponseDto, parsedBody),
-    };
+    } as ProductSuccessResponse;
   }
 }
 

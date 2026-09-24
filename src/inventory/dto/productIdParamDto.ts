@@ -5,5 +5,5 @@ export class ProductIdParamDto {
   @IsNotEmpty()
   @IsNumberString()
   @ApiProperty()
-  productId: string
+  productId: string;
 }

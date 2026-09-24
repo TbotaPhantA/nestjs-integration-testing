@@ -10,10 +10,12 @@ export class ProductRepository {
   ) {}
 
   findById(productId: string): Promise<ProductEntity | null> {
-    return this.txHost.tx.getRepository(ProductEntity).findOne({ where: { id: productId }})
+    return this.txHost.tx
+      .getRepository(ProductEntity)
+      .findOne({ where: { id: productId } });
   }
 
   save(product: ProductEntity): Promise<ProductEntity> {
-    return this.txHost.tx.getRepository(ProductEntity).save(product)
+    return this.txHost.tx.getRepository(ProductEntity).save(product);
   }
 }

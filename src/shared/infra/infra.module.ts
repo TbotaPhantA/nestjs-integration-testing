@@ -35,10 +35,7 @@ const clsModule = ClsModule.forRoot({
   ],
 });
 
-const infraModules: DynamicModule[] = [
-  typeOrmModule,
-  clsModule,
-];
+const infraModules: DynamicModule[] = [typeOrmModule, clsModule];
 
 @Module({
   imports: infraModules,

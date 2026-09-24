@@ -1,9 +1,7 @@
 export class InjectionBuilder<T extends {} = {}> {
   public readonly result: T;
 
-  constructor(
-    private _target: T,
-  ) {
+  constructor(private _target: T) {
     this.result = _target;
   }
 

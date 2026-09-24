@@ -10,7 +10,7 @@ export enum ProductFixtureNamesEnum {
 export interface ProductFixture {
   name: ProductFixtureNamesEnum;
   id: string;
-  value: () => InjectionBuilder<ProductEntityBuilder>
+  value: () => InjectionBuilder<ProductEntityBuilder>;
 }
 
 export const ProductFixtures = {
@@ -28,6 +28,6 @@ function productFixture(name: ProductFixtureNamesEnum): ProductFixture {
   return {
     name,
     id,
-    value: () => ProductEntityBuilder.defaultAll().with({ id })
+    value: () => ProductEntityBuilder.defaultAll().with({ id }),
   };
 }

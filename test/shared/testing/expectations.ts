@@ -49,7 +49,7 @@ export function expectProductEventInDB(
         });
 
       if (!expected) {
-        expect(actual).toStrictEqual(expected)
+        expect(actual).toStrictEqual(expected);
       } else {
         const { messageId: _messageId, ...rest } = expected;
 

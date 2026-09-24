@@ -6,17 +6,17 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  name: string
+  name: string;
 
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  description: string
+  description: string;
 
   @IsNotEmpty()
   @IsInt()
   @Min(1)
   @Max(MAX_INT_32)
   @ApiProperty()
-  quantity: number
+  quantity: number;
 }

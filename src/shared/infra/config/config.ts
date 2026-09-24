@@ -2,7 +2,7 @@ import { ensureNumber } from '../../utils/ensures/ensureNumber.js';
 import { ensureTruthy } from '../../utils/ensures/ensureTruthy.js';
 
 class Config {
-  port = ensureNumber(Number(process.env.PORT))
+  port = ensureNumber(Number(process.env.PORT));
   db = {
     host: ensureTruthy(process.env.DB_HOST),
     port: ensureNumber(Number(process.env.DB_PORT)),
@@ -12,8 +12,8 @@ class Config {
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     poolSize: process.env.DB_POOL_SIZE
       ? ensureNumber(Number(process.env.DB_POOL_SIZE))
-      : 10
-  }
+      : 10,
+  };
 }
 
-export const config = new Config()
+export const config = new Config();

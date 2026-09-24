@@ -4,13 +4,13 @@ export function assertTruthy<T>(
 ): asserts param is NonNullable<T> {
   if (!param) {
     if (!error) {
-      throw new Error('Given param is not truthy')
+      throw new Error('Given param is not truthy');
     }
 
     if (typeof error === 'string') {
-      throw new Error(error)
+      throw new Error(error);
     }
 
-    throw error
+    throw error;
   }
 }

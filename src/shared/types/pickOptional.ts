@@ -1,1 +1,2 @@
-export type PickOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type PickOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;

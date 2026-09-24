@@ -10,6 +10,6 @@ export class ProductEventRepository {
   ) {}
 
   save(events: ProductEventEntity[]): Promise<ProductEventEntity[]> {
-    return this.txHost.tx.getRepository(ProductEventEntity).save(events)
+    return this.txHost.tx.getRepository(ProductEventEntity).save(events);
   }
 }

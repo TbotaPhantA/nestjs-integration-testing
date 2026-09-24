@@ -6,7 +6,9 @@ export class ProductDtoBuilder {
   static defaultAll(): InjectionBuilder<ProductResponseDto> {
     const productEntity = ProductEntityBuilder.defaultAll().result;
 
-    return new InjectionBuilder<ProductResponseDto>(new ProductResponseDto()).with({
+    return new InjectionBuilder<ProductResponseDto>(
+      new ProductResponseDto(),
+    ).with({
       id: productEntity.id.toString(),
       createdAt: productEntity.createdAt.toISOString(),
       updatedAt: productEntity.updatedAt.toISOString(),

@@ -21,31 +21,31 @@ describe(ProductController.name, () => {
     it('returns the seeded product by id', async () => {
       const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
       const { app } = await testApp.context();
-      const expectedResponse = ProductDtoBuilder.defaultAll().with({ id }).result
+      const expectedResponse = ProductDtoBuilder.defaultAll().with({
+        id,
+      }).result;
 
-      const response = await productsClient(app).findById(id);
-
-      expect(response.statusCode).toStrictEqual(HttpStatus.OK);
-      expect(response.body).toEqual(expectedResponse);
+      const { body } = await productsClient(app)
+        .findById(id)
+        .expectStatus(HttpStatus.OK);
+      expect(body).toEqual(expectedResponse);
     });
 
     describe('unhappy path', () => {
       testApp.itTx(
         'returns Bad Request when the product does not exist',
         async ({ app }) => {
-          const productId = ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
-          const expectedErrorBody = ErrorResponseBodyBuilder
-            .defaultAll()
-            .with({
-              statusCode: HttpStatus.BAD_REQUEST,
-              message: `Product ${productId} not found!`,
-            })
-            .result;
+          const productId =
+            ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Product ${productId} not found!`,
+          }).result;
 
-          const response = await productsClient(app).findById(productId);
-
-          expect(response.statusCode).toStrictEqual(HttpStatus.BAD_REQUEST);
-          expect(response.body).toStrictEqual(expectedErrorBody);
+          const { body } = await productsClient(app)
+            .findById(productId)
+            .expectStatus(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual(expectedErrorBody);
         },
       );
     });
