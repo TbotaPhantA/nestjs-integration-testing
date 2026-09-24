@@ -12,12 +12,12 @@ import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inve
 
 const testApp = createTestSuite();
 
-describe(ProductController.name, () => {
+describe.concurrent(ProductController.name, () => {
   afterAll(async () => {
     await testApp.teardown();
   });
 
-  describe(ProductController.prototype.findById.name, () => {
+  describe.concurrent(ProductController.prototype.findById.name, () => {
     it('returns the seeded product by id', async () => {
       const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
       const { app } = await testApp.context();
@@ -31,7 +31,7 @@ describe(ProductController.name, () => {
       expect(body).toEqual(expectedResponse);
     });
 
-    describe('unhappy path', () => {
+    describe.concurrent('unhappy path', () => {
       testApp.itTx(
         'returns Bad Request when the product does not exist',
         async ({ app }) => {

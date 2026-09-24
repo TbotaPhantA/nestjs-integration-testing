@@ -14,12 +14,12 @@ import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inv
 
 const testApp = createTestSuite({ freezeDate: '2000-01-01T00:00:00.000Z' });
 
-describe(ProductController.name, () => {
+describe.concurrent(ProductController.name, () => {
   afterAll(async () => {
     await testApp.teardown();
   });
 
-  describe(ProductController.prototype.create.name, () => {
+  describe.concurrent(ProductController.prototype.create.name, () => {
     testApp.itTx(
       'creates a product and records a PRODUCT_WAS_CREATED event',
       async ({ app, txHost, now }) => {

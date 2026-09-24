@@ -21,12 +21,12 @@ import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inve
 
 const testApp = createTestSuite({ freezeDate: '2000-01-02T00:00:00.000Z' });
 
-describe(ProductController.name, () => {
+describe.concurrent(ProductController.name, () => {
   afterAll(async () => {
     await testApp.teardown();
   });
 
-  describe(ProductController.prototype.reDescribe.name, () => {
+  describe.concurrent(ProductController.prototype.reDescribe.name, () => {
     testApp.itTx(
       'should successfully redescribe a product',
       async ({ app, txHost, now }) => {
@@ -68,7 +68,7 @@ describe(ProductController.name, () => {
       },
     );
 
-    describe('unhappy path', () => {
+    describe.concurrent('unhappy path', () => {
       testApp.itTx(
         'returns Bad Request when the product does not exist',
         async ({ app }) => {
