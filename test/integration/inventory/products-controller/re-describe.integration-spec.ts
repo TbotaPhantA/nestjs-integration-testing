@@ -74,12 +74,12 @@ describe(ProductController.name, () => {
         async ({ app }) => {
           const productId =
             ProductFixtures[ProductFixtureNamesEnum.NON_EXISTENT_PRODUCT].id;
+          const requestBody = ReDescribeProductDtoBuilder.defaultAll().with({
+            productId,
+          }).result;
           const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
             statusCode: HttpStatus.BAD_REQUEST,
             message: `Product ${productId} not found!`,
-          }).result;
-          const requestBody = ReDescribeProductDtoBuilder.defaultAll().with({
-            productId,
           }).result;
 
           const { body } = await productsClient(app)
