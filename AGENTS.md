@@ -11,7 +11,7 @@
 - `npm run lint` — oxlint (not ESLint)
 - `npm run format` — prettier (single quotes, trailing commas)
 - `npm run build` — nest build, output to `dist/`
-- `make test-int` — run all integration tests (equivalent to `npm run test:integration`, but loads env via `--env-file=.env`); requires running Postgres. Filter to specific file(s) with `FILES`, e.g. `make test-int FILES="test/integration/inventory/products-controller/findById.integration-spec.ts"`
+- `make test-int` — run all integration tests (equivalent to `npm run test:integration`, but loads env via `--env-file=.env`); requires running Postgres. Filter to specific file(s) with `FILES`, e.g. `make test-int FILES="test/integration/inventory/products-controller/products.integration-spec.ts"`
 
 ## Architecture
 
