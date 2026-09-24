@@ -1,5 +1,8 @@
-import { afterAll, describe, it } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
@@ -26,14 +29,21 @@ const testApp = createTestSuite({
   poolSize: 10,
 });
 
+let app: NestFastifyApplication;
+let txHost: TransactionHost<TransactionalAdapterTypeOrm>;
+let now: Date;
+
 describe.concurrent(ProductController.name, () => {
+  beforeAll(async () => {
+    ({ app, txHost, now } = await testApp.context());
+  });
+
   afterAll(async () => {
     await testApp.teardown();
   });
 
   describe.concurrent(ProductController.prototype.findById.name, () => {
     it.concurrent('returns the seeded product by id', async () => {
-      const { app } = await testApp.context();
       const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
       const expectedResponse = ProductDtoBuilder.defaultAll().with({
         id,
@@ -49,7 +59,6 @@ describe.concurrent(ProductController.name, () => {
       it.concurrent(
         'returns Bad Request when the product does not exist',
         async () => {
-          const { app } = await testApp.context();
           const nonExistentProductId = '9999889999';
           const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
             statusCode: HttpStatus.BAD_REQUEST,
@@ -67,8 +76,6 @@ describe.concurrent(ProductController.name, () => {
 
   describe.concurrent(ProductController.prototype.reDescribe.name, () => {
     it.concurrent('should successfully redescribe a product', async () => {
-      const { app, txHost, now } = await testApp.context();
-
       await isolateInTransaction(async () => {
         const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
         const changes = {
@@ -113,8 +120,6 @@ describe.concurrent(ProductController.name, () => {
       it.concurrent(
         'returns Bad Request when the product does not exist',
         async () => {
-          const { app, txHost } = await testApp.context();
-
           await isolateInTransaction(async () => {
             const nonExistentProductId = '9999889999';
             const requestBody = ReDescribeProductDtoBuilder.defaultAll().with({
@@ -138,8 +143,6 @@ describe.concurrent(ProductController.name, () => {
 
   describe.concurrent(ProductController.prototype.changeQuantity.name, () => {
     it.concurrent('should not change quantity', async () => {
-      const { app, txHost } = await testApp.context();
-
       await isolateInTransaction(async () => {
         const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
 
@@ -184,8 +187,6 @@ describe.concurrent(ProductController.name, () => {
     it.concurrent.each(testCases)(
       '%s',
       async ({ changes, expectedEventName }) => {
-        const { app, txHost, now } = await testApp.context();
-
         await isolateInTransaction(async () => {
           const { id } =
             ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
@@ -229,8 +230,6 @@ describe.concurrent(ProductController.name, () => {
       it.concurrent(
         'returns Bad Request when the product does not exist',
         async () => {
-          const { app, txHost } = await testApp.context();
-
           await isolateInTransaction(async () => {
             const nonExistentProductId = '9999889999';
             const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
@@ -254,8 +253,6 @@ describe.concurrent(ProductController.name, () => {
 
   describe.concurrent(ProductController.prototype.delete.name, () => {
     it.concurrent('should successfully delete a product', async () => {
-      const { app, txHost, now } = await testApp.context();
-
       await isolateInTransaction(async () => {
         const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
 
@@ -293,8 +290,6 @@ describe.concurrent(ProductController.name, () => {
       it.concurrent(
         'returns Bad Request when the product does not exist',
         async () => {
-          const { app, txHost } = await testApp.context();
-
           await isolateInTransaction(async () => {
             const nonExistentProductId = '9999889999';
             const expectedErrorBody =

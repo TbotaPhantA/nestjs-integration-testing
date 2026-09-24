@@ -1,5 +1,8 @@
-import { afterAll, describe, it } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
@@ -15,7 +18,15 @@ import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inv
 
 const testApp = createTestSuite({ freezeDate: '2000-01-01T00:00:00.000Z' });
 
+let app: NestFastifyApplication;
+let txHost: TransactionHost<TransactionalAdapterTypeOrm>;
+let now: Date;
+
 describe.concurrent(ProductController.name, () => {
+  beforeAll(async () => {
+    ({ app, txHost, now } = await testApp.context());
+  });
+
   afterAll(async () => {
     await testApp.teardown();
   });
@@ -24,8 +35,6 @@ describe.concurrent(ProductController.name, () => {
     it.concurrent(
       'creates a product and records a PRODUCT_WAS_CREATED event',
       async () => {
-        const { app, txHost, now } = await testApp.context();
-
         await isolateInTransaction(async () => {
           const requestBody = ProductDtoBuilder.defaultAll().result;
 
