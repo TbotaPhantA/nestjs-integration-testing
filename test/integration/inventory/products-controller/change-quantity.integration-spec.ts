@@ -1,4 +1,4 @@
-import { afterAll, describe } from 'vitest';
+import { afterAll, describe, it } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
@@ -8,6 +8,7 @@ import {
   ProductFixtures,
 } from '../../../shared/fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
+import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
 import {
   expectProductEventInDB,
   expectProductInDB,
@@ -30,30 +31,34 @@ describe.concurrent(ProductController.name, () => {
   });
 
   describe.concurrent(ProductController.prototype.changeQuantity.name, () => {
-    testApp.itTx('should not change quantity', async ({ app, txHost }) => {
-      const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+    it.concurrent('should not change quantity', async () => {
+      const { app, txHost } = await testApp.context();
 
-      const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
-        quantity: 5, // same quantity as in fixture
-        productId: id,
-      }).result;
-      const expectedResponse = ProductDtoBuilder.defaultAll().with({
-        id,
-      }).result;
-      const expectedEntity = ProductEntityBuilder.defaultAll().with({
-        id,
-      }).result;
-      const expectedEvent = null;
+      await isolateInTransaction(async () => {
+        const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
 
-      const { body } = await productsClient(app)
-        .changeQuantity(requestBody)
-        .expectStatus(HttpStatus.OK);
+        const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
+          quantity: 5, // same quantity as in fixture
+          productId: id,
+        }).result;
+        const expectedResponse = ProductDtoBuilder.defaultAll().with({
+          id,
+        }).result;
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          id,
+        }).result;
+        const expectedEvent = null;
 
-      expect(body).toStrictEqual(expectedResponse);
-      await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
-      await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
-        expectedEvent,
-      );
+        const { body } = await productsClient(app)
+          .changeQuantity(requestBody)
+          .expectStatus(HttpStatus.OK);
+
+        expect(body).toStrictEqual(expectedResponse);
+        await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
+        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
+          expectedEvent,
+        );
+      }, txHost);
     });
 
     const testCases = [
@@ -69,62 +74,72 @@ describe.concurrent(ProductController.name, () => {
       },
     ];
 
-    testApp.itTx.each(testCases)(
+    it.concurrent.each(testCases)(
       '%s',
-      async ({ app, txHost, now }, { changes, expectedEventName }) => {
-        const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+      async ({ changes, expectedEventName }) => {
+        const { app, txHost, now } = await testApp.context();
 
-        const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
-          ...changes,
-          productId: id,
-        }).result;
-        const expectedResponse = ProductDtoBuilder.defaultAll().with({
-          ...changes,
-          id,
-          updatedAt: now.toISOString(),
-        }).result;
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({
-          ...changes,
-          id,
-          updatedAt: now,
-        }).result;
-        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
-          aggregateId: id,
-          eventName: expectedEventName,
-          createdAt: now,
-          value: expectedResponse,
-        }).result;
+        await isolateInTransaction(async () => {
+          const { id } =
+            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
 
-        const { body } = await productsClient(app)
-          .changeQuantity(requestBody)
-          .expectStatus(HttpStatus.OK);
+          const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
+            ...changes,
+            productId: id,
+          }).result;
+          const expectedResponse = ProductDtoBuilder.defaultAll().with({
+            ...changes,
+            id,
+            updatedAt: now.toISOString(),
+          }).result;
+          const expectedEntity = ProductEntityBuilder.defaultAll().with({
+            ...changes,
+            id,
+            updatedAt: now,
+          }).result;
+          const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+            aggregateId: id,
+            eventName: expectedEventName,
+            createdAt: now,
+            value: expectedResponse,
+          }).result;
 
-        expect(body).toStrictEqual(expectedResponse);
-        await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
-        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
-          expectedEvent,
-        );
+          const { body } = await productsClient(app)
+            .changeQuantity(requestBody)
+            .expectStatus(HttpStatus.OK);
+
+          expect(body).toStrictEqual(expectedResponse);
+          await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
+          await expectProductEventInDB({
+            txHost,
+            aggregateId: id,
+          }).toStrictEqual(expectedEvent);
+        }, txHost);
       },
     );
   });
 
   describe.concurrent('unhappy path', () => {
-    testApp.itTx(
+    it.concurrent(
       'returns Bad Request when the product does not exist',
-      async ({ app }) => {
-        const nonExistentProductId = '9999889999';
-        const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
-          productId: nonExistentProductId,
-        }).result;
-        const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: `Product ${nonExistentProductId} not found!`,
-        }).result;
+      async () => {
+        const { app, txHost } = await testApp.context();
 
-        const { body } = await productsClient(app)
-          .changeQuantity(requestBody)
-          .expectStatus(HttpStatus.BAD_REQUEST);
-        expect(body).toStrictEqual(expectedErrorBody);
+        await isolateInTransaction(async () => {
+          const nonExistentProductId = '9999889999';
+          const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
+            productId: nonExistentProductId,
+          }).result;
+          const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Product ${nonExistentProductId} not found!`,
+          }).result;
+
+          const { body } = await productsClient(app)
+            .changeQuantity(requestBody)
+            .expectStatus(HttpStatus.BAD_REQUEST);
+          expect(body).toStrictEqual(expectedErrorBody);
+        }, txHost);
       },
     );
   });

@@ -18,9 +18,9 @@ describe.concurrent(ProductController.name, () => {
   });
 
   describe.concurrent(ProductController.prototype.findById.name, () => {
-    it('returns the seeded product by id', async () => {
-      const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+    it.concurrent('returns the seeded product by id', async () => {
       const { app } = await testApp.context();
+      const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
       const expectedResponse = ProductDtoBuilder.defaultAll().with({
         id,
       }).result;
@@ -32,9 +32,10 @@ describe.concurrent(ProductController.name, () => {
     });
 
     describe.concurrent('unhappy path', () => {
-      testApp.itTx(
+      it.concurrent(
         'returns Bad Request when the product does not exist',
-        async ({ app }) => {
+        async () => {
+          const { app } = await testApp.context();
           const nonExistentProductId = '9999889999';
           const expectedErrorBody = ErrorResponseBodyBuilder.defaultAll().with({
             statusCode: HttpStatus.BAD_REQUEST,

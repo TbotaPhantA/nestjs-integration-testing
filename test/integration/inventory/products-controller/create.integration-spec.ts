@@ -1,9 +1,10 @@
-import { afterAll, describe } from 'vitest';
+import { afterAll, describe, it } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
+import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
 import {
   expectProductEventInDB,
   expectProductInDB,
@@ -20,34 +21,39 @@ describe.concurrent(ProductController.name, () => {
   });
 
   describe.concurrent(ProductController.prototype.create.name, () => {
-    testApp.itTx(
+    it.concurrent(
       'creates a product and records a PRODUCT_WAS_CREATED event',
-      async ({ app, txHost, now }) => {
-        const requestBody = ProductDtoBuilder.defaultAll().result;
+      async () => {
+        const { app, txHost, now } = await testApp.context();
 
-        const { body } = await productsClient(app)
-          .create(requestBody)
-          .expectStatus(HttpStatus.CREATED);
+        await isolateInTransaction(async () => {
+          const requestBody = ProductDtoBuilder.defaultAll().result;
 
-        const id = body.id;
-        const expectedResponse = ProductDtoBuilder.defaultAll().with({
-          id,
-        }).result;
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({
-          id,
-        }).result;
-        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
-          eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
-          aggregateId: id,
-          createdAt: now,
-          value: body,
-        }).result;
+          const { body } = await productsClient(app)
+            .create(requestBody)
+            .expectStatus(HttpStatus.CREATED);
 
-        expect(body).toStrictEqual(expectedResponse);
-        await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
-        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
-          expectedEvent,
-        );
+          const id = body.id;
+          const expectedResponse = ProductDtoBuilder.defaultAll().with({
+            id,
+          }).result;
+          const expectedEntity = ProductEntityBuilder.defaultAll().with({
+            id,
+          }).result;
+          const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+            eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+            aggregateId: id,
+            createdAt: now,
+            value: body,
+          }).result;
+
+          expect(body).toStrictEqual(expectedResponse);
+          await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
+          await expectProductEventInDB({
+            txHost,
+            aggregateId: id,
+          }).toStrictEqual(expectedEvent);
+        }, txHost);
       },
     );
   });
