@@ -21,7 +21,7 @@ import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inve
 
 const testApp = createTestSuite({
   freezeDate: '2000-01-02T00:00:00.000Z',
-  poolSize: 2,
+  poolSize: 3,
 });
 
 describe(ProductController.name, () => {
