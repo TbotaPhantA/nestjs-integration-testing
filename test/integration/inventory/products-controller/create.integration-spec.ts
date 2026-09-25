@@ -1,9 +1,13 @@
-import { afterAll, describe } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { HttpStatus } from '@nestjs/common';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { ProductController } from '../../../../src/inventory/product.controller.js';
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
+import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
 import {
   expectProductEventInDB,
   expectProductInDB,
@@ -14,40 +18,51 @@ import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inv
 
 const testApp = createTestSuite({ freezeDate: '2000-01-01T00:00:00.000Z' });
 
+let app: NestFastifyApplication;
+let txHost: TransactionHost<TransactionalAdapterTypeOrm>;
+let now: Date;
+
 describe.concurrent(ProductController.name, () => {
+  beforeAll(async () => {
+    ({ app, txHost, now } = await testApp.context());
+  });
+
   afterAll(async () => {
     await testApp.teardown();
   });
 
   describe.concurrent(ProductController.prototype.create.name, () => {
-    testApp.itTx(
+    it.concurrent(
       'creates a product and records a PRODUCT_WAS_CREATED event',
-      async ({ app, txHost, now }) => {
-        const requestBody = ProductDtoBuilder.defaultAll().result;
+      async () => {
+        await isolateInTransaction(async () => {
+          const requestBody = ProductDtoBuilder.defaultAll().result;
 
-        const { body } = await productsClient(app)
-          .create(requestBody)
-          .expectStatus(HttpStatus.CREATED);
+          const { body } = await productsClient(app)
+            .create(requestBody)
+            .expectStatus(HttpStatus.CREATED);
 
-        const id = body.id;
-        const expectedResponse = ProductDtoBuilder.defaultAll().with({
-          id,
-        }).result;
-        const expectedEntity = ProductEntityBuilder.defaultAll().with({
-          id,
-        }).result;
-        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
-          eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
-          aggregateId: id,
-          createdAt: now,
-          value: body,
-        }).result;
+          const id = body.id;
+          const expectedResponse = ProductDtoBuilder.defaultAll().with({
+            id,
+          }).result;
+          const expectedEntity = ProductEntityBuilder.defaultAll().with({
+            id,
+          }).result;
+          const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+            eventName: ProductEventNameEnum.PRODUCT_WAS_CREATED,
+            aggregateId: id,
+            createdAt: now,
+            value: body,
+          }).result;
 
-        expect(body).toStrictEqual(expectedResponse);
-        await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
-        await expectProductEventInDB({ txHost, aggregateId: id }).toStrictEqual(
-          expectedEvent,
-        );
+          expect(body).toStrictEqual(expectedResponse);
+          await expectProductInDB({ txHost, id }).toStrictEqual(expectedEntity);
+          await expectProductEventInDB({
+            txHost,
+            aggregateId: id,
+          }).toStrictEqual(expectedEvent);
+        }, txHost);
       },
     );
   });
