@@ -2,7 +2,25 @@ services:
   postgres:
     image: postgres:18-alpine
     container_name: nestjs-testing
-    restart: unless-stopped
+    # Durability is intentionally off: the data dir is a tmpfs that is rebuilt by
+    # migrations + seeds on every `local-infra-up`. After an unclean kill the data
+    # dir may be corrupt, so we must not silently restart into it.
+    restart: "no"
+    # max_wal_senders must be 0 when wal_level=minimal, or the server refuses to start
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - wal_level=minimal
+      - -c
+      - max_wal_senders=0
+      - -c
+      - max_wal_size=4GB
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
