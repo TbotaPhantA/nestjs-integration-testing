@@ -10,8 +10,8 @@ export class ReDescribeProductDtoBuilder {
       new ReDescribeProductDto(),
     ).with({
       productId: defaultProduct.id,
-      name: 'name',
-      description: 'description',
+      name: defaultProduct.name,
+      description: defaultProduct.description,
     });
   }
 }

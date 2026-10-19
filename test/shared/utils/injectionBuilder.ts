@@ -22,3 +22,6 @@ export class InjectionBuilder<T extends {} = {}> {
     return new InjectionBuilder(updatedTarget as Omit<T, K>);
   }
 }
+
+export const inject = <T extends {}>(value: T): InjectionBuilder<T> =>
+  new InjectionBuilder(value);

@@ -1,6 +1,6 @@
-import { ProductEntityBuilder } from '../entities/productEntity.builder.js';
 import { InjectionBuilder } from '../../../../utils/injectionBuilder.js';
 import { ProductResponseDto } from '../../../../../../src/inventory/dto/productResponseDto.js';
+import { ProductEntityBuilder } from '../entities/productEntity.builder.js';
 
 export class ProductDtoBuilder {
   static defaultAll(): InjectionBuilder<ProductResponseDto> {
