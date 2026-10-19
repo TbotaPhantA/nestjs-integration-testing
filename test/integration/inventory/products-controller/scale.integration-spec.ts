@@ -7,7 +7,6 @@ import { ProductController } from '../../../../src/inventory/product.controller.
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import type { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
-import { productFixtures } from '../../../../fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
 import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
 import {
@@ -15,7 +14,10 @@ import {
   expectProductInDB,
 } from '../../../shared/testing/expectations.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
-import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import {
+  ProductEntityBuilder,
+  ProductFixtureNames,
+} from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { CreateProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/createProductDto.builder.js';
 import { ReDescribeProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
@@ -117,7 +119,8 @@ describe.skip.concurrent(ProductController.name, () => {
       '%s',
       { timeout: CASE_TIMEOUT },
       async () => {
-        const { id } = productFixtures.DEFAULT_PRODUCT;
+        const { id } =
+          ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
         const expectedResponse = ProductDtoBuilder.defaultAll().with({
           id,
         }).result;
@@ -187,7 +190,8 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes }) => {
         await isolateInTransaction(async () => {
-          const { id } = productFixtures.DEFAULT_PRODUCT;
+          const { id } =
+            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
 
           const requestBody = ReDescribeProductDtoBuilder.defaultAll().with({
             ...changes,
@@ -231,7 +235,8 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes, expectedEventName }) => {
         await isolateInTransaction(async () => {
-          const { id } = productFixtures.DEFAULT_PRODUCT;
+          const { id } =
+            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -273,7 +278,8 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes, expectedEventName }) => {
         await isolateInTransaction(async () => {
-          const { id } = productFixtures.DEFAULT_PRODUCT;
+          const { id } =
+            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -315,7 +321,8 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes }) => {
         await isolateInTransaction(async () => {
-          const { id } = productFixtures.DEFAULT_PRODUCT;
+          const { id } =
+            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -350,7 +357,8 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async () => {
         await isolateInTransaction(async () => {
-          const { id } = productFixtures.DEFAULT_PRODUCT;
+          const { id } =
+            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result;
 
           const expectedResponse = ProductDtoBuilder.defaultAll().with({
             id,

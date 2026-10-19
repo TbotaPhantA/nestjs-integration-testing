@@ -7,15 +7,25 @@ async function up() {
   const dataSource = await appDataSource.initialize();
   try {
     for (const { entity, data } of seedOrder) {
-      const repo = dataSource.getRepository(entity);
-      const columns = repo.metadata.columns.map((c) => c.propertyName);
-      await dataSource.transaction(async (manager) =>
+      const { columns, primaryColumns } =
+        dataSource.getRepository(entity).metadata;
+      const insertColumns = columns.map((column) => column.propertyName);
+      const overwriteColumns = columns
+        .map((column) => column.databaseName)
+        .filter(
+          (column) => !primaryColumns.some((pk) => pk.databaseName === column),
+        );
+      const conflictTarget = primaryColumns.map(
+        (column) => column.databaseName,
+      );
+
+      await dataSource.transaction((manager) =>
         manager
           .createQueryBuilder()
           .insert()
-          .into(entity, columns)
+          .into(entity, insertColumns)
           .values(data)
-          .orIgnore()
+          .orUpdate(overwriteColumns, conflictTarget)
           .execute(),
       );
     }
