@@ -1,14 +1,9 @@
 import { defineFixtures } from './defineFixtures.js';
+import { hashInt2 } from './hashes/hashInt2.js';
 
 describe('defineFixtures', () => {
   it('computes id from hash of name', () => {
-    const hash = (input: string) => {
-      let h = 0;
-      for (let i = 0; i < input.length; i++) {
-        h = (h * 31 + input.charCodeAt(i)) % 0x20000000000000;
-      }
-      return h.toString();
-    };
+    const hash = (input: string) => hashInt2(input).toString();
 
     const fixtures = defineFixtures({
       DEFAULT_PRODUCT: (id) => [

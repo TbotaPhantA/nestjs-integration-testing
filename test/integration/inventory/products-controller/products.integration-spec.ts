@@ -15,8 +15,8 @@ import {
   expectProductInDB,
 } from '../../../shared/testing/expectations.js';
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
-import { productFactory } from '../../../../fixtures/inventory/products.factory.js';
-import { productEventFactory } from '../../../../fixtures/inventory/productEvents.factory.js';
+import { ProductEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
+import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { ReDescribeProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
 import { ChangeQuantityDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/changeQuantityDto.builder.js';
 import { ErrorResponseBodyBuilder } from '../../../shared/fixtures/builders/inventory/dto/errorResponseBody.builder.js';
@@ -88,21 +88,17 @@ describe.concurrent(ProductController.name, () => {
           id,
           updatedAt: now.toISOString(),
         }).result;
-        const expectedEntity = productFactory
-          .params({
-            ...changes,
-            id,
-            updatedAt: now,
-          })
-          .build();
-        const expectedEvent = productEventFactory
-          .params({
-            aggregateId: id,
-            eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
-            createdAt: now,
-            value: expectedResponse,
-          })
-          .build();
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          ...changes,
+          id,
+          updatedAt: now,
+        }).result;
+        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+          aggregateId: id,
+          eventName: ProductEventNameEnum.PRODUCT_WAS_RE_DESCRIBED,
+          createdAt: now,
+          value: expectedResponse,
+        }).result;
 
         const { body } = await productsClient(app)
           .reDescribe(requestBody)
@@ -154,11 +150,9 @@ describe.concurrent(ProductController.name, () => {
         const expectedResponse = ProductDtoBuilder.defaultAll().with({
           id,
         }).result;
-        const expectedEntity = productFactory
-          .params({
-            id,
-          })
-          .build();
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          id,
+        }).result;
         const expectedEvent = null;
 
         const { body } = await productsClient(app)
@@ -202,21 +196,17 @@ describe.concurrent(ProductController.name, () => {
             id,
             updatedAt: now.toISOString(),
           }).result;
-          const expectedEntity = productFactory
-            .params({
-              ...changes,
-              id,
-              updatedAt: now,
-            })
-            .build();
-          const expectedEvent = productEventFactory
-            .params({
-              aggregateId: id,
-              eventName: expectedEventName,
-              createdAt: now,
-              value: expectedResponse,
-            })
-            .build();
+          const expectedEntity = ProductEntityBuilder.defaultAll().with({
+            ...changes,
+            id,
+            updatedAt: now,
+          }).result;
+          const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+            aggregateId: id,
+            eventName: expectedEventName,
+            createdAt: now,
+            value: expectedResponse,
+          }).result;
 
           const { body } = await productsClient(app)
             .changeQuantity(requestBody)
@@ -267,21 +257,17 @@ describe.concurrent(ProductController.name, () => {
           updatedAt: now.toISOString(),
           removedAt: now.toISOString(),
         }).result;
-        const expectedEntity = productFactory
-          .params({
-            id,
-            updatedAt: now,
-            removedAt: now,
-          })
-          .build();
-        const expectedEvent = productEventFactory
-          .params({
-            aggregateId: id,
-            eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
-            createdAt: now,
-            value: expectedResponse,
-          })
-          .build();
+        const expectedEntity = ProductEntityBuilder.defaultAll().with({
+          id,
+          updatedAt: now,
+          removedAt: now,
+        }).result;
+        const expectedEvent = ProductEventEntityBuilder.defaultAll().with({
+          aggregateId: id,
+          eventName: ProductEventNameEnum.PRODUCT_WAS_DELETED,
+          createdAt: now,
+          value: expectedResponse,
+        }).result;
 
         const { body } = await productsClient(app)
           .delete(id)

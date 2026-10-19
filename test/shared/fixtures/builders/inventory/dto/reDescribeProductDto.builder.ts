@@ -1,10 +1,10 @@
 import { InjectionBuilder } from '../../../../utils/injectionBuilder.js';
 import { ReDescribeProductDto } from '../../../../../../src/inventory/dto/reDescribeProduct.dto.js';
-import { productFactory } from '../../../../../../fixtures/inventory/products.factory.js';
+import { ProductEntityBuilder } from '../entities/productEntity.builder.js';
 
 export class ReDescribeProductDtoBuilder {
   static defaultAll(): InjectionBuilder<ReDescribeProductDto> {
-    const defaultProduct = productFactory.build();
+    const defaultProduct = ProductEntityBuilder.defaultAll().result;
 
     return new InjectionBuilder<ReDescribeProductDto>(
       new ReDescribeProductDto(),
