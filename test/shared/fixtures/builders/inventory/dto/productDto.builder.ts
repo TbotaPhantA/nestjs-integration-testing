@@ -1,10 +1,10 @@
-import { ProductEntityBuilder } from '../entities/productEntity.builder.js';
 import { InjectionBuilder } from '../../../../utils/injectionBuilder.js';
 import { ProductResponseDto } from '../../../../../../src/inventory/dto/productResponseDto.js';
+import { productFactory } from '../../../../../../fixtures/inventory/products.factory.js';
 
 export class ProductDtoBuilder {
   static defaultAll(): InjectionBuilder<ProductResponseDto> {
-    const productEntity = ProductEntityBuilder.defaultAll().result;
+    const productEntity = productFactory.build();
 
     return new InjectionBuilder<ProductResponseDto>(
       new ProductResponseDto(),

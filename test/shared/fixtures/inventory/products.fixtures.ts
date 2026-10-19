@@ -16,7 +16,9 @@ export const ProductFixtures = {
   [ProductFixtureNamesEnum.DEFAULT_PRODUCT]: {
     name: ProductFixtureNamesEnum.DEFAULT_PRODUCT,
     id: hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString(),
-    value: () => ProductEntityBuilder.defaultAll().with({ id: hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString() }),
+    value: () =>
+      ProductEntityBuilder.defaultAll().with({
+        id: hashInt8(ProductFixtureNamesEnum.DEFAULT_PRODUCT).toString(),
+      }),
   },
 } satisfies Record<ProductFixtureNamesEnum, ProductFixture>;
-

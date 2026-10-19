@@ -1,10 +1,7 @@
 import { ProductEntity } from '../../src/inventory/entities/product.entity.js';
-import {
-  ProductFixtureNamesEnum,
-  ProductFixtures,
-} from '../../test/shared/fixtures/inventory/products.fixtures.js';
+import { productFixtures } from '../../fixtures/inventory/products.fixtures.js';
 
 export const CreatedProductSeed = {
   entity: ProductEntity,
-  data: ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT].value().result,
+  data: productFixtures.DEFAULT_PRODUCT.rows[0].data,
 } as const;

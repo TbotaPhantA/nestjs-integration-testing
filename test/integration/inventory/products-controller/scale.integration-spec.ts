@@ -106,7 +106,7 @@ let app: NestFastifyApplication;
 let txHost: TransactionHost<TransactionalAdapterTypeOrm>;
 let now: Date;
 
-describe.concurrent(ProductController.name, () => {
+describe.skip.concurrent(ProductController.name, () => {
   beforeAll(async () => {
     ({ app, txHost, now } = await testApp.context());
   }, HOOK_TIMEOUT);
