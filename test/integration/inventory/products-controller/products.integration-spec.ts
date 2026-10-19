@@ -16,7 +16,6 @@ import {
 import { ProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/productDto.builder.js';
 import {
   ProductEntityBuilder,
-  ProductFixtureNames,
 } from '../../../shared/fixtures/builders/inventory/entities/productEntity.builder.js';
 import { ProductEventEntityBuilder } from '../../../shared/fixtures/builders/inventory/entities/productEventEntity.builder.js';
 import { ReDescribeProductDtoBuilder } from '../../../shared/fixtures/builders/inventory/dto/reDescribeProductDto.builder.js';
@@ -43,8 +42,7 @@ describe.concurrent(ProductController.name, () => {
 
   describe.concurrent(ProductController.prototype.findById.name, () => {
     it.concurrent('returns the seeded product by id', async () => {
-      const id =
-        ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result.id;
+      const { id } = ProductEntityBuilder['DEFAULT_PRODUCT'].result;
       const expectedResponse = ProductDtoBuilder.defaultAll().with({
         id,
       }).result;
@@ -77,8 +75,7 @@ describe.concurrent(ProductController.name, () => {
   describe.concurrent(ProductController.prototype.reDescribe.name, () => {
     it.concurrent('should successfully redescribe a product', async () => {
       await isolateInTransaction(async () => {
-        const id =
-          ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result.id;
+        const { id } = ProductEntityBuilder['DEFAULT_PRODUCT'].result;
         const changes = {
           name: 'name2',
           description: 'description2',
@@ -145,8 +142,7 @@ describe.concurrent(ProductController.name, () => {
   describe.concurrent(ProductController.prototype.changeQuantity.name, () => {
     it.concurrent('should not change quantity', async () => {
       await isolateInTransaction(async () => {
-        const id =
-          ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result.id;
+        const { id } = ProductEntityBuilder['DEFAULT_PRODUCT'].result;
 
         const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
           quantity: 5, // same quantity as in fixture
@@ -190,8 +186,7 @@ describe.concurrent(ProductController.name, () => {
       '%s',
       async ({ changes, expectedEventName }) => {
         await isolateInTransaction(async () => {
-          const id =
-            ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result.id;
+          const { id } = ProductEntityBuilder['DEFAULT_PRODUCT'].result;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -256,8 +251,7 @@ describe.concurrent(ProductController.name, () => {
   describe.concurrent(ProductController.prototype.delete.name, () => {
     it.concurrent('should successfully delete a product', async () => {
       await isolateInTransaction(async () => {
-        const id =
-          ProductEntityBuilder[ProductFixtureNames.DEFAULT_PRODUCT].result.id;
+        const { id } = ProductEntityBuilder['DEFAULT_PRODUCT'].result;
 
         const expectedResponse = ProductDtoBuilder.defaultAll().with({
           id,
