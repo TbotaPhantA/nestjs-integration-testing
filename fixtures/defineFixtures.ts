@@ -1,5 +1,5 @@
 import type { EntityTarget, ObjectLiteral } from 'typeorm';
-import { hashInt8 } from './hashes/hashInt8.js';
+import { hashInt2 } from './hashes/hashInt2.js';
 
 export type FixtureRow = {
   entity: EntityTarget<ObjectLiteral>;
@@ -35,7 +35,7 @@ export function defineFixtures<
   const fixtures: any = {};
 
   for (const [name, factory] of entries) {
-    const id = hashInt8(String(name)).toString();
+    const id = hashInt2(String(name)).toString();
     const rows = factory(id);
     fixtures[name] = {
       name: String(name),
