@@ -39,11 +39,11 @@ All `.ts` files import with `.js` extensions — required by `moduleResolution: 
 - Write flows that **modify a seeded row** must freeze at an instant *distinct* from the fixture's — meeting the seed's timestamp makes TypeORM regenerate the update-date as real time. `re-describe` therefore freezes at `2000-01-02` while the seed carries `2000-01-01`
 - HTTP calls go through per-controller clients (e.g. `productsClient(app)` from `test/shared/clients/products.client.ts`), which encapsulate method, path, and DTO parsing
 - Assertions use the native vitest `expect`: `toStrictEqual`/`toEqual` for HTTP responses, DTOs, and status codes (e.g. `expect(response.statusCode).toStrictEqual(HttpStatus.OK)`); DB state goes through `expectProductInDB({ txHost, id })` and `expectProductEventInDB({ txHost, aggregateId })` (from `test/shared/testing/expectations.ts`) — the chainable helper loads the row from the transaction itself and asserts with native `expect(actual).toStrictEqual(expected)` (`expectProductEventInDB` ignores `messageId`), keeping failure output identical to native vitest
-- Committed seed rows are a deliberate, Rails-fixtures-style pattern: `findById`-style reads reference `ProductFixtures[Enum]` whose deterministic `id` is `hashInt8(name)`. Seeding stays a dev-ops prerequisite (`make local-infra-up` / `make seeds-up`)
+- Committed seed rows are a deliberate, Rails-fixtures-style pattern: `findById`-style reads reference `ProductFixtures.DEFAULT_PRODUCT` whose deterministic `id` is `hashInt8(name)`. Seeding stays a dev-ops prerequisite (`make local-infra-up` / `make seeds-up`)
 
 ## Test fixtures
 
-- `test/shared/fixtures/inventory/products.fixtures.ts` — the fixture registry: `ProductFixtureNamesEnum` (names) + `ProductFixtures[Enum]` exposing `{ name, id, entity, dto, event, createDto, reDescribeDto }` builder factories with the hash-derived id pre-applied
+- `test/shared/fixtures/inventory/products.fixtures.ts` — the fixture registry: `ProductFixtures` is an object whose **keys are the fixture names**, built via `defineProductFixtures(...)` so each entry exposes `{ name, id, value() }` with the hash-derived id pre-applied; reference entries directly (e.g. `ProductFixtures.DEFAULT_PRODUCT`) — there is no names enum
 - Builders live in `test/shared/fixtures/builders/inventory/` — builder pattern using `InjectionBuilder<T>` with `.with({...})` and `.omit(...)` methods; every factory is a `defaultAll()` method and returns a fresh builder
 - Builder defaults carry the placeholder id `'1'`; the fixture registry overrides it with `hashInt8(fixtureName)`
 - Access the final value via `.result` on the builder; each `.defaultAll()` call returns a new builder so `.with(...)` never leaks state

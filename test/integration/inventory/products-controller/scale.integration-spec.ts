@@ -7,10 +7,7 @@ import { ProductController } from '../../../../src/inventory/product.controller.
 import { ProductEventNameEnum } from '../../../../src/inventory/entities/productEvent.entity.js';
 import type { ProductEntity } from '../../../../src/inventory/entities/product.entity.js';
 import { productsClient } from '../../../shared/clients/products.client.js';
-import {
-  ProductFixtureNamesEnum,
-  ProductFixtures,
-} from '../../../shared/fixtures/inventory/products.fixtures.js';
+import { ProductFixtures } from '../../../shared/fixtures/inventory/products.fixtures.js';
 import { createTestSuite } from '../../../shared/testing/test-suite.js';
 import { isolateInTransaction } from '../../../shared/utils/isolateInTransaction.js';
 import {
@@ -120,7 +117,7 @@ describe.skip.concurrent(ProductController.name, () => {
       '%s',
       { timeout: CASE_TIMEOUT },
       async () => {
-        const { id } = ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+        const { id } = ProductFixtures.DEFAULT_PRODUCT;
         const expectedResponse = ProductDtoBuilder.defaultAll().with({
           id,
         }).result;
@@ -190,8 +187,7 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes }) => {
         await isolateInTransaction(async () => {
-          const { id } =
-            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+          const { id } = ProductFixtures.DEFAULT_PRODUCT;
 
           const requestBody = ReDescribeProductDtoBuilder.defaultAll().with({
             ...changes,
@@ -235,8 +231,7 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes, expectedEventName }) => {
         await isolateInTransaction(async () => {
-          const { id } =
-            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+          const { id } = ProductFixtures.DEFAULT_PRODUCT;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -278,8 +273,7 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes, expectedEventName }) => {
         await isolateInTransaction(async () => {
-          const { id } =
-            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+          const { id } = ProductFixtures.DEFAULT_PRODUCT;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -321,8 +315,7 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async ({ changes }) => {
         await isolateInTransaction(async () => {
-          const { id } =
-            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+          const { id } = ProductFixtures.DEFAULT_PRODUCT;
 
           const requestBody = ChangeQuantityDtoBuilder.defaultAll().with({
             ...changes,
@@ -357,8 +350,7 @@ describe.skip.concurrent(ProductController.name, () => {
       { timeout: CASE_TIMEOUT },
       async () => {
         await isolateInTransaction(async () => {
-          const { id } =
-            ProductFixtures[ProductFixtureNamesEnum.DEFAULT_PRODUCT];
+          const { id } = ProductFixtures.DEFAULT_PRODUCT;
 
           const expectedResponse = ProductDtoBuilder.defaultAll().with({
             id,

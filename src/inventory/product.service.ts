@@ -7,7 +7,6 @@ import { ProductEventRepository } from './repositories/productEvent.repository.j
 import { ReDescribeProductDto } from './dto/reDescribeProduct.dto.js';
 import { ChangeQuantityDto } from './dto/changeQuantity.dto.js';
 import { Propagation, Transactional } from '@nestjs-cls/transactional';
-import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { assertTruthy } from '../shared/utils/assert/assertTruthy.js';
 
 @Injectable()
