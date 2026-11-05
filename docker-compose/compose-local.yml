@@ -21,6 +21,24 @@ services:
       - max_wal_senders=0
       - -c
       - max_wal_size=4GB
+      - -c
+      - checkpoint_timeout=1d
+      - -c
+      - checkpoint_flush_after=0
+      - -c
+      - backend_flush_after=0
+      - -c
+      - wal_compression=off
+      - -c
+      - jit=off
+      - -c
+      - max_parallel_workers=0
+      - -c
+      - max_parallel_workers_per_gather=0
+      - -c
+      - track_io_timing=off
+      - -c
+      - random_page_cost=1.0
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
