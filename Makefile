@@ -35,3 +35,6 @@ seeds-up:
 
 test-int:
 	node --env-file=$(ENV_FILE) ./node_modules/vitest/vitest.mjs run --config vitest.config.integration.ts $(FILES)
+
+localpipe:
+	npm run build && npm run lint && make test-int
